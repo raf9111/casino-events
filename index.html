@@ -169,6 +169,10 @@
       const formContainer = document.getElementById(formId);
       const currentDisplay = formContainer.style.display;
       formContainer.style.display = currentDisplay === "block" ? "none" : "block"; // Toggle visibility
+
+      if (formId === "participants-container" && currentDisplay !== "block") {
+        showParticipants(); // Update participants list when showing the participants container
+      }
     }
 
     // Обработчик формы
