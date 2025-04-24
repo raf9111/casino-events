@@ -87,10 +87,25 @@
     }
 
     .form-container {
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(0, 0, 0, 0.7); /* Полупрозрачный черный фон */
       padding: 20px;
       border-radius: 10px;
       margin-top: 20px;
+    }
+
+    .form-container h2 {
+      color: #f2eecb; /* Желтый цвет для заголовка */
+    }
+
+    .form-container input, .form-container textarea, .form-container button {
+      background-color: #2d3f2e;
+      color: #f2eecb; /* Более темный желтый для текста */
+      border: 1px solid #3c6650;
+      border-radius: 5px;
+      padding: 10px;
+      font-size: 1rem;
+      width: 100%;
+      margin-bottom: 10px;
     }
 
     #participants-container ul {
@@ -124,12 +139,9 @@
       <img src="https://i.imgur.com/HktXjPI.jpeg" alt="Poker Tournament" />
       <div class="event-details">
         <div class="event-title">Poker Tournament</div>
-        <div class="event-date">April 14, 2025</div>
+        <div class="event-date">March 15, 2025</div>
         <div class="event-meta">14 participants<br />3 winners</div>
-        <div class="button-container">
-          <button onclick="openSignupForm()">Sign Up</button>
-          <button onclick="showParticipants()">Participants</button>
-        </div>
+        <!-- Убраны кнопки для покерного турнира -->
       </div>
     </div>
 
