@@ -25,15 +25,15 @@
       background-color: rgba(0, 0, 0, 0.7);
       z-index: -1;
     }
-   header {
-  font-family: 'Roboto', sans-serif; /* Новый шрифт */
-  background-color: transparent; /* Убирает фон */
-  padding: 1rem 2rem;
-  text-align: center;
-  color: gold;
-  font-size: 2.5rem;
-  letter-spacing: 2px;
-}
+    header {
+      font-family: 'Roboto', sans-serif; /* Новый шрифт */
+      background-color: transparent; /* Убирает фон */
+      padding: 1rem 2rem;
+      text-align: center;
+      color: gold;
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+    }
     .events-container {
       max-width: 900px;
       margin: 2rem auto;
@@ -69,6 +69,39 @@
       font-size: 0.95rem;
       color: #d0d0d0;
     }
+
+    /* Добавленные стили для кнопок и формы */
+    .button-container {
+      display: flex;
+      gap: 10px;
+    }
+
+    .button-container button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .form-container {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    #participants-container ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #participants-container li {
+      margin: 5px 0;
+      font-size: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -80,6 +113,10 @@
         <div class="event-title">Backgammon Tournament</div>
         <div class="event-date">September 5, 2025</div>
         <div class="event-meta">Upcoming event – sign-up coming soon</div>
+        <div class="button-container">
+          <button onclick="openSignupForm()">Sign Up</button>
+          <button onclick="showParticipants()">Participants</button>
+        </div>
       </div>
     </div>
 
@@ -87,10 +124,74 @@
       <img src="https://i.imgur.com/HktXjPI.jpeg" alt="Poker Tournament" />
       <div class="event-details">
         <div class="event-title">Poker Tournament</div>
-        <div class="event-date">March 15, 2025</div>
+        <div class="event-date">April 14, 2025</div>
         <div class="event-meta">14 participants<br />3 winners</div>
+        <div class="button-container">
+          <button onclick="openSignupForm()">Sign Up</button>
+          <button onclick="showParticipants()">Participants</button>
+        </div>
       </div>
     </div>
+
+    <!-- Форма записи -->
+    <div id="signup-form-container" class="form-container" style="display: none;">
+      <h2>Записаться на турнир</h2>
+      <form id="signup-form">
+        <label for="name">Ваше имя:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="comment">Комментарий (необязательно):</label>
+        <textarea id="comment" name="comment"></textarea>
+        <button type="submit">Записаться</button>
+      </form>
+    </div>
+
+    <!-- Список участников -->
+    <div id="participants-container" class="form-container" style="display: none;">
+      <h2>Участники турнира</h2>
+      <ul id="participants-list">
+        <!-- Здесь будут отображаться участники -->
+      </ul>
+    </div>
   </div>
+
+  <script>
+    let participants = ["player1", "player2", "player3", "player4", "player5", "player6", "player7", "player8", "player9", "player10"];
+
+    // Функция для открытия формы записи
+    function openSignupForm() {
+      document.getElementById("signup-form-container").style.display = "block";
+      document.getElementById("participants-container").style.display = "none";
+    }
+
+    // Функция для отображения участников
+    function showParticipants() {
+      document.getElementById("participants-container").style.display = "block";
+      document.getElementById("signup-form-container").style.display = "none";
+      
+      const list = document.getElementById("participants-list");
+      list.innerHTML = ""; // Очищаем список перед добавлением
+
+      participants.forEach(player => {
+        const li = document.createElement("li");
+        li.textContent = player;
+        list.appendChild(li);
+      });
+    }
+
+    // Обработчик формы
+    document.getElementById("signup-form").addEventListener("submit", function(event) {
+      event.preventDefault();
+      
+      const playerName = document.getElementById("name").value;
+      const comment = document.getElementById("comment").value;
+
+      participants.push(playerName);
+      alert(`${playerName} успешно записан!`);
+      
+      // Очистить форму
+      document.getElementById("signup-form").reset();
+      showParticipants(); // Обновить список участников
+    });
+  </script>
 </body>
 </html>
