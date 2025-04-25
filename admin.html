@@ -45,9 +45,10 @@
         btn.addEventListener("click", async () => {
           const id = btn.getAttribute("data-id");
           const newStatus = btn.getAttribute("data-status");
-          await updateDoc(doc(db, "participants", id), {
-            status: newStatus
-          });
+          await updateDoc(docRef, {
+  status: "approved",
+  approved: true // 👈 Добавляем это!
+});
           loadParticipants();
         });
       });
