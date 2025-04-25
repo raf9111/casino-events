@@ -33,6 +33,10 @@
       cursor: pointer;
       margin-top: 0.5rem;
     }
+    .approve-btn:disabled {
+      background-color: gray;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -41,17 +45,16 @@
 
   <!-- Firebase -->
   <script type="module">
-    // Your Firebase config:
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import {
       getFirestore, collection, getDocs, updateDoc, doc
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
-     apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
+      apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
       authDomain: "casino-events-8008d.firebaseapp.com",
       projectId: "casino-events-8008d",
-      storageBucket: "casino-events-8008d.firebasestorage.app",
+      storageBucket: "casino-events-8008d.appspot.com",
       messagingSenderId: "13547117273",
       appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
     };
@@ -71,17 +74,27 @@
           <p><strong>Name:</strong> ${data.name}</p>
           <p><strong>Comment:</strong> ${data.comment || ""}</p>
           <p><strong>Status:</strong> ${data.status}</p>
-          <button class="approve-btn">Approve</button>
         `;
-        const btn = div.querySelector("button");
-        btn.addEventListener("click", async () => {
-          await updateDoc(doc(db, "participants", docSnap.id), {
-            status: "approved",
-            approved: true
+
+        if (data.status !== "approved") {
+          const btn = document.createElement("button");
+          btn.className = "approve-btn";
+          btn.innerText = "Approve";
+          btn.addEventListener("click", async () => {
+            await updateDoc(doc(db, "participants", docSnap.id), {
+              status: "approved",
+              approved: true
+            });
+            btn.disabled = true;
+            btn.innerText = "Approved";
           });
-          btn.disabled = true;
-          btn.innerText = "Approved";
-        });
+          div.appendChild(btn);
+        } else {
+          const label = document.createElement("p");
+          label.innerHTML = "<em>Already approved</em>";
+          div.appendChild(label);
+        }
+
         participantsList.appendChild(div);
       });
     }
