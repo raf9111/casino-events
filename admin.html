@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Casino Events</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+     apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
+      authDomain: "casino-events-8008d.firebaseapp.com",
+      projectId: "casino-events-8008d",
+      storageBucket: "casino-events-8008d.firebasestorage.app",
+      messagingSenderId: "13547117273",
+      appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadParticipants() {
+      const querySnapshot = await getDocs(collection(db, "participants"));
+      const container = document.getElementById("participants-list");
+      container.innerHTML = "";
+
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        
+        const div = document.createElement("div");
+        div.className = "participant";
+        div.innerHTML = `
+          <strong>${data.name}</strong> (${data.status})<br />
+          Comment: ${data.comment || "—"}<br />
+          <button data-id="${docSnap.id}" data-status="approved">Approve</button>
+          <button data-id="${docSnap.id}" data-status="hidden">Hide</button>
+          <hr />
+        `;
+        container.appendChild(div);
+      });
+
+      // Слушатели на кнопки
+      container.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-id");
+          const newStatus = btn.getAttribute("data-status");
+          await updateDoc(doc(db, "participants", id), {
+            status: newStatus
+          });
+          loadParticipants();
+        });
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", loadParticipants);
+  </script>
+  <style>
+    body {
+      background-color: #111;
+      color: #f2eecb;
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+    }
+    h1 {
+      color: gold;
+    }
+    .participant {
+      background: #222;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #555;
+    }
+    button {
+      margin-right: 0.5rem;
+      background: #333;
+      color: gold;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #444;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+  <div id="participants-list">Loading...</div>
+</body>
+</html>
