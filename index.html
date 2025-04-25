@@ -50,6 +50,13 @@
       flex-direction: column;
       overflow: hidden;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.5s ease-out;
+    }
+    .event.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
     .event img {
       width: 100%;
@@ -103,6 +110,22 @@
       display: inline-block;
       width: 100%;
     }
+    .admin-btn {
+      background-color: #808080;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      display: inline-block;
+      width: 100%;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 75px;
+    }
   </style>
 </head>
 <body>
@@ -135,27 +158,7 @@
     </div>
   </div>
 
-  <!-- Admin Panel Button -->
- <a href="admin.html" class="admin-btn">Admin</a>
-
-<style>
-  .admin-btn {
-    background-color: #808080;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-    display: inline-block;
-    width: 100%;
-    position: fixed;
-    bottom: 20px;  /* Располагаем кнопку внизу страницы */
-    left: 50%;
-    transform: translateX(-50%);  /* Центрируем по горизонтали */
-    max-width: 75px;  /* Максимальная ширина кнопки */
-  }
-</style>
+  <a href="admin.html" class="admin-btn">Admin</a>
 
   <script>
     const firebaseConfig = {
@@ -169,17 +172,19 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-async function sendTelegramNotification(message) {
-  const token = "8129557214:AAEzFFKl7u1cVv8I8c8Rj_2lW7_MoOdgWU8";
-  const chatId = "231694521";
-  const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
-  await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text: message })
-  });
-}
+    async function sendTelegramNotification(message) {
+      const token = "8129557214:AAEzFFKl7u1cVv8I8c8Rj_2lW7_MoOdgWU8";
+      const chatId = "231694521";
+      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+      await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: message })
+      });
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       const signUpBtn = document.getElementById('sign-up-btn');
       const formContainer = document.getElementById('form-container');
@@ -206,26 +211,39 @@ async function sendTelegramNotification(message) {
         }
       });
 
-     submitBtn.addEventListener('click', async () => {
-  const name = document.getElementById('name').value.trim();
-  const comment = document.getElementById('comment').value.trim();
+      submitBtn.addEventListener('click', async () => {
+        const name = document.getElementById('name').value.trim();
+        const comment = document.getElementById('comment').value.trim();
 
-  if (name === '') return;
+        if (name === '') return;
 
-  await db.collection("participants").add({
-    name: name,
-    comment: comment,
-    approved: false,
-    timestamp: new Date()
-  });
+        await db.collection("participants").add({
+          name: name,
+          comment: comment,
+          approved: false,
+          timestamp: new Date()
+        });
 
-  // 🟡 Отправляем уведомление в Telegram
-  await sendTelegramNotification(`📝 Новый участник записался: ${name}${comment ? `\nКомментарий: ${comment}` : ''}`);
+        // 🟡 Отправляем уведомление в Telegram
+        await sendTelegramNotification(`📝 New player: ${name}${comment ? `\nComment: ${comment}` : ''}`);
 
-  alert("You have signed up! Awaiting approval.");
-  document.getElementById('name').value = '';
-  document.getElementById('comment').value = '';
-});
+        alert("You have signed up! Awaiting approval.");
+        document.getElementById('name').value = '';
+        document.getElementById('comment').value = '';
+      });
+
+      // Ленивая загрузка событий с анимацией
+      const events = document.querySelectorAll('.event');
+      const onScroll = () => {
+        events.forEach(event => {
+          if (event.getBoundingClientRect().top < window.innerHeight) {
+            event.classList.add('visible');
+          }
+        });
+      };
+
+      window.addEventListener('scroll', onScroll);
+      onScroll();
     });
   </script>
 </body>
