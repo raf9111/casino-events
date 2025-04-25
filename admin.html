@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel</title>
   <style>
-    /* Стили для страницы */
     body {
       font-family: Arial, sans-serif;
       background-color: #121212;
@@ -25,7 +24,7 @@
     .participant p {
       margin: 0.3rem 0;
     }
-    .approve-btn {
+    .approve-btn, .delete-btn {
       background-color: #28a745;
       color: white;
       border: none;
@@ -34,45 +33,22 @@
       cursor: pointer;
       margin-top: 0.5rem;
     }
-    .login-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-    .login-input {
-      margin: 0.5rem;
-      padding: 0.5rem;
-      border-radius: 5px;
-    }
-    .login-btn {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
+    .delete-btn {
+      background-color: #d9534f; /* Красный цвет для кнопки удаления */
     }
   </style>
 </head>
 <body>
   <h1>Admin Panel</h1>
-
-  <!-- Форма входа -->
-  <div id="login-container" class="login-container">
-    <input id="email" class="login-input" type="email" placeholder="Email" />
-    <input id="password" class="login-input" type="password" placeholder="Password" />
-    <button id="login-btn" class="login-btn">Login</button>
-  </div>
-
-  <!-- Список участников -->
   <div id="participants-list"></div>
 
   <!-- Firebase -->
   <script type="module">
+    // Your Firebase config:
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import {
+      getFirestore, collection, getDocs, updateDoc, doc, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
@@ -84,26 +60,9 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const loginBtn = document.getElementById("login-btn");
-    const loginContainer = document.getElementById("login-container");
     const participantsList = document.getElementById("participants-list");
-
-    // Функция входа
-    loginBtn.addEventListener("click", async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        loginContainer.style.display = "none"; // Скрыть форму входа
-        loadParticipants(); // Загружаем список участников
-      } catch (error) {
-        alert("Invalid email or password");
-      }
-    });
 
     async function loadParticipants() {
       const querySnapshot = await getDocs(collection(db, "participants"));
@@ -116,19 +75,33 @@
           <p><strong>Comment:</strong> ${data.comment || ""}</p>
           <p><strong>Status:</strong> ${data.status}</p>
           <button class="approve-btn">Approve</button>
+          <button class="delete-btn">Delete</button>
         `;
-        const btn = div.querySelector("button");
-        btn.addEventListener("click", async () => {
+        const approveBtn = div.querySelector(".approve-btn");
+        const deleteBtn = div.querySelector(".delete-btn");
+
+        approveBtn.addEventListener("click", async () => {
           await updateDoc(doc(db, "participants", docSnap.id), {
             status: "approved",
             approved: true
           });
-          btn.disabled = true;
-          btn.innerText = "Approved";
+          approveBtn.disabled = true;
+          approveBtn.innerText = "Approved";
         });
+
+        deleteBtn.addEventListener("click", async () => {
+          const confirmDelete = confirm("Are you sure you want to delete this participant?");
+          if (confirmDelete) {
+            await deleteDoc(doc(db, "participants", docSnap.id));
+            div.remove(); // Убираем участника из списка на странице
+          }
+        });
+
         participantsList.appendChild(div);
       });
     }
+
+    loadParticipants();
   </script>
 </body>
 </html>
