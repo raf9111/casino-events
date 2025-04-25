@@ -136,7 +136,26 @@
   </div>
 
   <!-- Admin Panel Button -->
-  <a href="admin.html" class="admin-btn">Admin</a>
+ <a href="admin-panel.html" class="admin-btn">Go to Admin Panel</a>
+
+<style>
+  .admin-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    display: inline-block;
+    width: 100%;
+    position: fixed;
+    bottom: 20px;  /* Располагаем кнопку внизу страницы */
+    left: 50%;
+    transform: translateX(-50%);  /* Центрируем по горизонтали */
+    max-width: 300px;  /* Максимальная ширина кнопки */
+  }
+</style>
 
   <script>
     const firebaseConfig = {
