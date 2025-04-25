@@ -53,7 +53,7 @@
     // Your Firebase config:
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import {
-      getFirestore, collection, getDocs, updateDoc, doc, deleteDoc
+      getFirestore, collection, getDocs, addDoc, updateDoc, doc, deleteDoc
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -130,6 +130,28 @@
         participantsList.appendChild(div);
       });
     }
+
+    // Функция для добавления нового участника
+    async function addNewParticipant(name, comment) {
+      const newParticipant = {
+        name: name,
+        comment: comment || "",
+        status: "waiting",
+        approved: false,
+        timestamp: new Date()
+      };
+
+      const docRef = await addDoc(collection(db, "participants"), newParticipant);
+
+      // Уведомление о новом участнике
+      await sendTelegramNotification(`Новый участник зарегистрирован: ${name}`);
+
+      // Перезагрузить список участников
+      loadParticipants();
+    }
+
+    // Для примера добавим новый участник через функцию
+    addNewParticipant("John Doe", "No comment");
 
     loadParticipants();
   </script>
