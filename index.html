@@ -169,7 +169,17 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+async function sendTelegramNotification(message) {
+  const token = "8129557214:AAEzFFKl7u1cVv8I8c8Rj_2lW7_MoOdgWU8";
+  const chatId = "231694521";
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
+  await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text: message })
+  });
+}
     window.addEventListener('DOMContentLoaded', () => {
       const signUpBtn = document.getElementById('sign-up-btn');
       const formContainer = document.getElementById('form-container');
@@ -196,23 +206,26 @@
         }
       });
 
-      submitBtn.addEventListener('click', async () => {
-        const name = document.getElementById('name').value.trim();
-        const comment = document.getElementById('comment').value.trim();
+     submitBtn.addEventListener('click', async () => {
+  const name = document.getElementById('name').value.trim();
+  const comment = document.getElementById('comment').value.trim();
 
-        if (name === '') return;
+  if (name === '') return;
 
-        await db.collection("participants").add({
-          name: name,
-          comment: comment,
-          approved: false,
-          timestamp: new Date()
-        });
+  await db.collection("participants").add({
+    name: name,
+    comment: comment,
+    approved: false,
+    timestamp: new Date()
+  });
 
-        alert("You have signed up! Awaiting approval.");
-        document.getElementById('name').value = '';
-        document.getElementById('comment').value = '';
-      });
+  // 🟡 Отправляем уведомление в Telegram
+  await sendTelegramNotification(`📝 Новый участник записался: ${name}${comment ? `\nКомментарий: ${comment}` : ''}`);
+
+  alert("You have signed up! Awaiting approval.");
+  document.getElementById('name').value = '';
+  document.getElementById('comment').value = '';
+});
     });
   </script>
 </body>
