@@ -227,7 +227,12 @@
         // 🟡 Отправляем уведомление в Telegram
         await sendTelegramNotification(`📝 New player: ${name}${comment ? `\nComment: ${comment}` : ''}`);
 
-        alert("You have signed up! Awaiting approval.");
+        Swal.fire({
+  icon: 'success',
+  title: 'Signed up!',
+  text: 'Your request has been sent. Awaiting approval!',
+  confirmButtonColor: '#28a745'
+});
         document.getElementById('name').value = '';
         document.getElementById('comment').value = '';
       });
@@ -246,5 +251,6 @@
       onScroll();
     });
   </script>
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
