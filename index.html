@@ -126,6 +126,46 @@
       transform: translateX(-50%);
       max-width: 75px;
     }
+    <style>
+/* --- Адаптивность для мобильных --- */
+@media (max-width: 600px) {
+  
+  /* Кнопки Sign Up и Participants одна под другой */
+  .button {
+    display: block;
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Поля ввода растягиваются на всю ширину */
+  #name, #comment {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 5px;
+    border: none;
+    box-sizing: border-box;
+  }
+
+  /* Кнопка Admin маленькая, в углу */
+  .admin-btn {
+    width: auto;
+    min-width: 60px;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.9rem;
+    background-color: rgba(128, 128, 128, 0.7);
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    left: auto;
+    transform: none;
+    border-radius: 8px;
+    z-index: 1000;
+  }
+
+}
+</style>
   </style>
 </head>
 <body>
