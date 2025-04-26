@@ -1,11 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Casino Events</title>
+
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
     body {
       margin: 0;
@@ -99,18 +100,6 @@
       display: none;
     }
     .admin-btn {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 2rem;
-      text-align: center;
-      display: inline-block;
-      width: 100%;
-    }
-    .admin-btn {
       background-color: #808080;
       color: white;
       border: none;
@@ -126,68 +115,79 @@
       transform: translateX(-50%);
       max-width: 75px;
     }
-    <style>
-/* --- Адаптивность для мобильных --- */
-@media (max-width: 600px) {
-  
-  /* Кнопки Sign Up и Participants одна под другой */
-  .button {
-    display: block;
-    width: 100%;
-    margin-right: 0;
-    margin-bottom: 0.5rem;
-  }
-
-  /* Поля ввода растягиваются на всю ширину */
-  #name, #comment {
-    width: 100%;
-    margin-bottom: 0.5rem;
-    padding: 0.75rem;
-    border-radius: 5px;
-    border: none;
-    box-sizing: border-box;
-  }
-
-  /* Кнопка Admin маленькая, в углу */
-  .admin-btn {
-    width: auto;
-    min-width: 60px;
-    padding: 0.5rem 0.7rem;
-    font-size: 0.9rem;
-    background-color: rgba(128, 128, 128, 0.7);
-    position: fixed;
-    bottom: 15px;
-    right: 15px;
-    left: auto;
-    transform: none;
-    border-radius: 8px;
-    z-index: 1000;
-  }
-
-}
-</style>
+    /* Новый блок для предложений */
+    .idea-section {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    #idea-form-container input,
+    #idea-form-container textarea {
+      width: 100%;
+      margin-bottom: 0.5rem;
+      padding: 0.75rem;
+      border-radius: 5px;
+      border: none;
+      box-sizing: border-box;
+    }
+    @media (max-width: 600px) {
+      .button {
+        display: block;
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+      }
+      #name, #comment {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        padding: 0.75rem;
+        border-radius: 5px;
+        border: none;
+        box-sizing: border-box;
+      }
+      .admin-btn {
+        width: auto;
+        min-width: 60px;
+        padding: 0.5rem 0.7rem;
+        font-size: 0.9rem;
+        background-color: rgba(128, 128, 128, 0.7);
+        position: fixed;
+        bottom: 15px;
+        right: 15px;
+        left: auto;
+        transform: none;
+        border-radius: 8px;
+        z-index: 1000;
+      }
+    }
   </style>
 </head>
 <body>
-  <header>Casino Events</header>
+  <header>Casino staff Events</header>
+
   <div class="events-container">
+
+    <!-- Первый турнир -->
     <div class="event">
       <img src="https://i.imgur.com/v2ewA5v.jpeg" alt="Backgammon Tournament" />
       <div class="event-details">
         <div class="event-title">Backgammon Tournament</div>
         <div class="event-date">September 5, 2025</div>
         <div class="event-meta">Upcoming event – sign-up available below</div>
+
         <button class="button" id="sign-up-btn">Sign Up</button>
         <button class="button" id="show-participants-btn">Participants</button>
+
         <div id="form-container" class="form-container hidden">
           <input type="text" id="name" placeholder="Your name" />
           <input type="text" id="comment" placeholder="Comment (optional)" />
           <button class="button" id="submit-btn">Submit</button>
         </div>
+
         <div id="participants-list" class="participants-list hidden"></div>
       </div>
     </div>
 
+    <!-- Второй турнир -->
     <div class="event">
       <img src="https://i.imgur.com/HktXjPI.jpeg" alt="Poker Tournament" />
       <div class="event-details">
@@ -196,101 +196,151 @@
         <div class="event-meta">14 participants<br />3 winners</div>
       </div>
     </div>
+
+    <!-- Новый блок - Suggest an Idea -->
+    <div class="idea-section">
+      <button class="button" id="show-idea-form-btn">Suggest an Idea</button>
+
+      <div id="idea-form-container" class="form-container hidden">
+        <input type="text" id="idea-name" placeholder="Your name" />
+        <textarea id="idea-text" placeholder="Your idea" rows="4"></textarea>
+        <button class="button" id="submit-idea-btn">Submit Idea</button>
+      </div>
+    </div>
+
   </div>
 
+  <!-- Кнопка перехода в админку -->
   <a href="admin.html" class="admin-btn">Admin</a>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
+    authDomain: "casino-events-8008d.firebaseapp.com",
+    projectId: "casino-events-8008d",
+    storageBucket: "casino-events-8008d.firebasestorage.app",
+    messagingSenderId: "13547117273",
+    appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
+  };
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
-      authDomain: "casino-events-8008d.firebaseapp.com",
-      projectId: "casino-events-8008d",
-      storageBucket: "casino-events-8008d.firebasestorage.app",
-      messagingSenderId: "13547117273",
-      appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
-    };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  async function sendTelegramNotification(message) {
+    const token = "8129557214:AAEzFFKl7u1cVv8I8c8Rj_2lW7_MoOdgWU8";
+    const chatId = "231694521";
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
-    async function sendTelegramNotification(message) {
-      const token = "8129557214:AAEzFFKl7u1cVv8I8c8Rj_2lW7_MoOdgWU8";
-      const chatId = "231694521";
-      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: message })
+    });
+  }
 
-      await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId, text: message })
+  window.addEventListener('DOMContentLoaded', () => {
+    const signUpBtn = document.getElementById('sign-up-btn');
+    const formContainer = document.getElementById('form-container');
+    const showParticipantsBtn = document.getElementById('show-participants-btn');
+    const participantsList = document.getElementById('participants-list');
+    const submitBtn = document.getElementById('submit-btn');
+
+    const showIdeaFormBtn = document.getElementById('show-idea-form-btn');
+    const ideaFormContainer = document.getElementById('idea-form-container');
+    const submitIdeaBtn = document.getElementById('submit-idea-btn');
+
+    signUpBtn.addEventListener('click', () => {
+      formContainer.classList.toggle('hidden');
+      participantsList.classList.add('hidden');
+      ideaFormContainer.classList.add('hidden');
+    });
+
+    showParticipantsBtn.addEventListener('click', async () => {
+      participantsList.classList.toggle('hidden');
+      formContainer.classList.add('hidden');
+      ideaFormContainer.classList.add('hidden');
+
+      if (!participantsList.classList.contains('hidden')) {
+        const snapshot = await db.collection("participants").where("approved", "==", true).get();
+        participantsList.innerHTML = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          participantsList.innerHTML += `<div><strong>${data.name}</strong>: ${data.comment || ''}</div>`;
+        });
+      }
+    });
+
+    submitBtn.addEventListener('click', async () => {
+      const name = document.getElementById('name').value.trim();
+      const comment = document.getElementById('comment').value.trim();
+
+      if (name === '') return;
+
+      await db.collection("participants").add({
+        name: name,
+        comment: comment,
+        approved: false,
+        timestamp: new Date()
       });
-    }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const signUpBtn = document.getElementById('sign-up-btn');
-      const formContainer = document.getElementById('form-container');
-      const showParticipantsBtn = document.getElementById('show-participants-btn');
-      const participantsList = document.getElementById('participants-list');
-      const submitBtn = document.getElementById('submit-btn');
+      await sendTelegramNotification(`📝 New player: ${name}${comment ? `\nComment: ${comment}` : ''}`);
 
-      signUpBtn.addEventListener('click', () => {
-        formContainer.classList.toggle('hidden');
-        participantsList.classList.add('hidden');
+      Swal.fire({
+        icon: 'success',
+        title: 'Signed up!',
+        text: 'Your request has been sent. Awaiting approval!',
+        confirmButtonColor: '#28a745'
       });
 
-      showParticipantsBtn.addEventListener('click', async () => {
-        participantsList.classList.toggle('hidden');
-        formContainer.classList.add('hidden');
+      document.getElementById('name').value = '';
+      document.getElementById('comment').value = '';
+    });
 
-        if (!participantsList.classList.contains('hidden')) {
-          const snapshot = await db.collection("participants").where("approved", "==", true).get();
-          participantsList.innerHTML = '';
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            participantsList.innerHTML += `<div><strong>${data.name}</strong>: ${data.comment || ''}</div>`;
-          });
+    showIdeaFormBtn.addEventListener('click', () => {
+      ideaFormContainer.classList.toggle('hidden');
+      formContainer.classList.add('hidden');
+      participantsList.classList.add('hidden');
+    });
+
+    submitIdeaBtn.addEventListener('click', async () => {
+      const ideaName = document.getElementById('idea-name').value.trim();
+      const ideaText = document.getElementById('idea-text').value.trim();
+
+      if (ideaName === '' || ideaText === '') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Missing fields',
+          text: 'Please fill out both fields.',
+          confirmButtonColor: '#dc3545'
+        });
+        return;
+      }
+
+      await sendTelegramNotification(`💡 New Idea from ${ideaName}:\n${ideaText}`);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Thank you!',
+        text: 'Your idea has been submitted!',
+        confirmButtonColor: '#28a745'
+      });
+
+      document.getElementById('idea-name').value = '';
+      document.getElementById('idea-text').value = '';
+      ideaFormContainer.classList.add('hidden');
+    });
+
+    // Ленивая загрузка событий с анимацией
+    const events = document.querySelectorAll('.event');
+    const onScroll = () => {
+      events.forEach(event => {
+        if (event.getBoundingClientRect().top < window.innerHeight) {
+          event.classList.add('visible');
         }
       });
-
-      submitBtn.addEventListener('click', async () => {
-        const name = document.getElementById('name').value.trim();
-        const comment = document.getElementById('comment').value.trim();
-
-        if (name === '') return;
-
-        await db.collection("participants").add({
-          name: name,
-          comment: comment,
-          approved: false,
-          timestamp: new Date()
-        });
-
-        // 🟡 Отправляем уведомление в Telegram
-        await sendTelegramNotification(`📝 New player: ${name}${comment ? `\nComment: ${comment}` : ''}`);
-
-        Swal.fire({
-  icon: 'success',
-  title: 'Signed up!',
-  text: 'Your request has been sent. Awaiting approval!',
-  confirmButtonColor: '#28a745'
-});
-        document.getElementById('name').value = '';
-        document.getElementById('comment').value = '';
-      });
-
-      // Ленивая загрузка событий с анимацией
-      const events = document.querySelectorAll('.event');
-      const onScroll = () => {
-        events.forEach(event => {
-          if (event.getBoundingClientRect().top < window.innerHeight) {
-            event.classList.add('visible');
-          }
-        });
-      };
-
-      window.addEventListener('scroll', onScroll);
-      onScroll();
-    });
-  </script>
- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    };
+    window.addEventListener('scroll', onScroll);
+    onScroll();
+  });
+</script>
 </body>
 </html>
