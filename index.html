@@ -1,17 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Casino Events</title>
-
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <style>
+    /* Новый Luxury Bright Casino стиль */
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #0b3d2e;
+      background-color: #0a0a0a;
       color: #f2eecb;
       background-image: url('https://i.imgur.com/VGbWB7f.jpeg');
       background-size: cover;
@@ -25,7 +26,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background-color: rgba(0, 0, 0, 0.7);
+      background-color: rgba(0, 0, 0, 0.75);
       z-index: -1;
     }
     header {
@@ -34,26 +35,27 @@
       padding: 1rem 2rem;
       text-align: center;
       color: gold;
-      font-size: 2.5rem;
+      font-size: 2.7rem;
       letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     }
     .events-container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 2rem auto;
       padding: 0 1rem;
     }
     .event {
-      background-color: #213b2d;
-      border: 1px solid #3c6650;
-      border-radius: 10px;
+      background-color: rgba(33, 59, 45, 0.85);
+      border: 1px solid #bfa046;
+      border-radius: 12px;
       margin-bottom: 2rem;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
       opacity: 0;
       transform: translateY(50px);
-      transition: all 0.5s ease-out;
+      transition: all 0.6s ease-out;
     }
     .event.visible {
       opacity: 1;
@@ -65,46 +67,52 @@
       object-fit: cover;
     }
     .event-details {
-      padding: 1rem;
+      padding: 1.5rem;
     }
     .event-title {
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       font-weight: bold;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.7rem;
     }
     .event-date {
       color: #c2b280;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.7rem;
     }
     .event-meta {
-      font-size: 0.95rem;
+      font-size: 1rem;
       color: #d0d0d0;
     }
     .button {
-      background-color: rgba(0, 0, 0, 0.6);
-      color: #ffe066;
+      background-color: #bfa046;
+      color: #0a0a0a;
       border: none;
-      padding: 0.5rem 1rem;
+      padding: 0.75rem 1.2rem;
       margin-right: 0.5rem;
       margin-top: 1rem;
       cursor: pointer;
-      border-radius: 5px;
+      border-radius: 8px;
+      transition: background-color 0.3s, transform 0.3s;
+      font-weight: bold;
+    }
+    .button:hover {
+      background-color: #ffcc00;
+      transform: scale(1.05);
     }
     .form-container, .participants-list {
       margin-top: 1rem;
-      padding: 1rem;
-      background-color: rgba(0, 0, 0, 0.6);
-      border-radius: 5px;
+      padding: 1.2rem;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 8px;
     }
     .hidden {
       display: none;
     }
     .admin-btn {
-      background-color: #808080;
+      background-color: #606060;
       color: white;
       border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
       cursor: pointer;
       text-align: center;
       display: inline-block;
@@ -114,20 +122,10 @@
       left: 50%;
       transform: translateX(-50%);
       max-width: 75px;
+      transition: background-color 0.3s;
     }
-    /* Новый блок для предложений */
-    .idea-section {
-      margin-top: 2rem;
-      text-align: center;
-    }
-    #idea-form-container input,
-    #idea-form-container textarea {
-      width: 100%;
-      margin-bottom: 0.5rem;
-      padding: 0.75rem;
-      border-radius: 5px;
-      border: none;
-      box-sizing: border-box;
+    .admin-btn:hover {
+      background-color: #ff9900;
     }
     @media (max-width: 600px) {
       .button {
@@ -136,7 +134,7 @@
         margin-right: 0;
         margin-bottom: 0.5rem;
       }
-      #name, #comment {
+      #name, #comment, #idea-name, #idea-text {
         width: 100%;
         margin-bottom: 0.5rem;
         padding: 0.75rem;
@@ -149,8 +147,6 @@
         min-width: 60px;
         padding: 0.5rem 0.7rem;
         font-size: 0.9rem;
-        background-color: rgba(128, 128, 128, 0.7);
-        position: fixed;
         bottom: 15px;
         right: 15px;
         left: auto;
@@ -162,56 +158,53 @@
   </style>
 </head>
 <body>
-  <header>Casino staff Events</header>
 
-  <div class="events-container">
+<header>Casino Events</header>
 
-    <!-- Первый турнир -->
-    <div class="event">
-      <img src="https://i.imgur.com/v2ewA5v.jpeg" alt="Backgammon Tournament" />
-      <div class="event-details">
-        <div class="event-title">Backgammon Tournament</div>
-        <div class="event-date">September 5, 2025</div>
-        <div class="event-meta">Upcoming event – sign-up available below</div>
+<div class="events-container">
 
-        <button class="button" id="sign-up-btn">Sign Up</button>
-        <button class="button" id="show-participants-btn">Participants</button>
-
-        <div id="form-container" class="form-container hidden">
-          <input type="text" id="name" placeholder="Your name" />
-          <input type="text" id="comment" placeholder="Comment (optional)" />
-          <button class="button" id="submit-btn">Submit</button>
-        </div>
-
-        <div id="participants-list" class="participants-list hidden"></div>
+  <div class="event">
+    <img src="https://i.imgur.com/v2ewA5v.jpeg" alt="Backgammon Tournament" />
+    <div class="event-details">
+      <div class="event-title">Backgammon Tournament</div>
+      <div class="event-date">September 5, 2025</div>
+      <div class="event-meta">Upcoming event – sign-up available below</div>
+      <button class="button" id="sign-up-btn">Sign Up</button>
+      <button class="button" id="show-participants-btn">Participants</button>
+      <div id="form-container" class="form-container hidden">
+        <input type="text" id="name" placeholder="Your name" />
+        <input type="text" id="comment" placeholder="Comment (optional)" />
+        <button class="button" id="submit-btn">Submit</button>
       </div>
+      <div id="participants-list" class="participants-list hidden"></div>
     </div>
-
-    <!-- Второй турнир -->
-    <div class="event">
-      <img src="https://i.imgur.com/HktXjPI.jpeg" alt="Poker Tournament" />
-      <div class="event-details">
-        <div class="event-title">Poker Tournament</div>
-        <div class="event-date">April 14, 2025</div>
-        <div class="event-meta">14 participants<br />3 winners</div>
-      </div>
-    </div>
-
-    <!-- Новый блок - Suggest an Idea -->
-    <div class="idea-section">
-      <button class="button" id="show-idea-form-btn">Suggest an Idea</button>
-
-      <div id="idea-form-container" class="form-container hidden">
-        <input type="text" id="idea-name" placeholder="Your name" />
-        <textarea id="idea-text" placeholder="Your idea" rows="4"></textarea>
-        <button class="button" id="submit-idea-btn">Submit Idea</button>
-      </div>
-    </div>
-
   </div>
 
-  <!-- Кнопка перехода в админку -->
-  <a href="admin.html" class="admin-btn">Admin</a>
+  <div class="event">
+    <img src="https://i.imgur.com/HktXjPI.jpeg" alt="Poker Tournament" />
+    <div class="event-details">
+      <div class="event-title">Poker Tournament</div>
+      <div class="event-date">April 14, 2025</div>
+      <div class="event-meta">14 participants<br />3 winners</div>
+    </div>
+  </div>
+
+  <!-- Новый раздел "Suggest an Idea" -->
+  <div class="idea-section">
+    <button class="button" id="show-idea-form-btn">Suggest an Idea</button>
+    <div id="idea-form-container" class="form-container hidden">
+      <input type="text" id="idea-name" placeholder="Your name" />
+      <textarea id="idea-text" placeholder="Your idea" rows="4"></textarea>
+      <button class="button" id="submit-idea-btn">Submit Idea</button>
+    </div>
+  </div>
+
+</div>
+
+<a href="admin.html" class="admin-btn">Admin</a>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
@@ -329,7 +322,6 @@
       ideaFormContainer.classList.add('hidden');
     });
 
-    // Ленивая загрузка событий с анимацией
     const events = document.querySelectorAll('.event');
     const onScroll = () => {
       events.forEach(event => {
@@ -342,5 +334,6 @@
     onScroll();
   });
 </script>
+
 </body>
 </html>
