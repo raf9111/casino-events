@@ -196,12 +196,16 @@
 
 <script>
 function toggleContent(id) {
-  const content = document.getElementById(id);
-  if (content.style.display === "block") {
-    content.style.display = "none";
-  } else {
-    content.style.display = "block";
-  }
+  const allContents = document.querySelectorAll('.content');
+  allContents.forEach(content => {
+    if (content.id === id) {
+      // Если нажал на открытую секцию - закрыть её
+      content.style.display = (content.style.display === "block") ? "none" : "block";
+    } else {
+      // Все остальные секции закрыть
+      content.style.display = "none";
+    }
+  });
 }
 </script>
 
