@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Backgammon Tournament</title>
 
-  <!-- Firebase и SweetAlert (если нужно будет в будущем) -->
+  <!-- Firebase и SweetAlert (на будущее) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -17,6 +17,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #0a0a0a;
       color: #f2eecb;
+      background-image: url('https://i.imgur.com/VGbWB7f.jpeg');
       background-size: cover;
       background-attachment: fixed;
       background-position: center;
@@ -31,14 +32,40 @@
       background-color: rgba(0, 0, 0, 0.75);
       z-index: -1;
     }
-    header {
-      font-family: 'Roboto', sans-serif;
-      padding: 1rem;
+
+    .hero-image {
+      background-image: url('https://i.imgur.com/v2ewA5v.jpeg'); /* Фон нард */
+      height: 300px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       text-align: center;
       color: gold;
-      font-size: 2.5rem;
-      letter-spacing: 2px;
     }
+    .hero-image::before {
+      content: "";
+      background: rgba(0,0,0,0.5);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .hero-text {
+      position: relative;
+      z-index: 1;
+    }
+    .hero-text h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .hero-text p {
+      font-size: 1.2rem;
+    }
+
     .container {
       max-width: 900px;
       margin: 2rem auto;
@@ -87,24 +114,30 @@
       .button {
         width: 100%;
       }
+      .hero-text h1 {
+        font-size: 2rem;
+      }
+      .hero-text p {
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<header>Backgammon Tournament</header>
+<div class="hero-image">
+  <div class="hero-text">
+    <h1>Backgammon Tournament 2025</h1>
+    <p>September 5, 2025 — October 5, 2025</p>
+  </div>
+</div>
 
 <div class="container">
 
   <div class="section">
     <h2>🏆 Tournament Overview</h2>
-    <p>Join the ultimate backgammon competition! Prove your skills and become the champion!</p>
-  </div>
-
-  <div class="section">
-    <h2>📅 Tournament Dates</h2>
-    <p><strong>September 5, 2025 — October 5, 2025</strong></p>
+    <p>Join the ultimate backgammon competition!</p>
   </div>
 
   <div class="section">
@@ -134,15 +167,15 @@
     <h3>Rules</h3>
     <ul>
       <li>Standard backgammon rules apply.</li>
-      <li>Matches are best of 3 games.</li>
-      <li>Time limit per move: 2 minutes.</li>
-      <li>Top 2 from each group advance to playoffs.</li>
+      <li>Group games play till 11pts</li>
+      <li>Time limit - unknown yet</li>
+      <li>Top 3? from each group advance to playoffs.</li>
     </ul>
   </div>
 
   <div class="section">
     <button class="button" onclick="window.location.href='index.html'">Back to Main</button>
-    <button class="button" onclick="window.location.href='sign-up.html'">Sign Up</button> <!-- Пока ссылку ставим, потом можно заменить -->
+    <button class="button" onclick="window.location.href='sign-up.html'">Sign Up</button> <!-- Пока заглушка -->
   </div>
 
 </div>
@@ -160,4 +193,3 @@ function toggleContent(id) {
 
 </body>
 </html>
-
