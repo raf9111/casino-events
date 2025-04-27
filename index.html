@@ -4,11 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Casino Events</title>
+
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <!-- SweetAlert + Animate.css -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
   <style>
-    /* Новый Luxury Bright Casino стиль */
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -155,8 +160,16 @@
         z-index: 1000;
       }
     }
+    /* Меньше иконки SweetAlert */
+    .small-icon {
+      font-size: 1.5rem !important;
+    }
+    .swal2-icon {
+      margin: 10px auto !important;
+    }
   </style>
 </head>
+
 <body>
 
 <header>Casino Events</header>
@@ -189,7 +202,6 @@
     </div>
   </div>
 
-  <!-- Новый раздел "Suggest an Idea" -->
   <div class="idea-section">
     <button class="button" id="show-idea-form-btn">Suggest an Idea</button>
     <div id="idea-form-container" class="form-container hidden">
@@ -281,7 +293,11 @@
         icon: 'success',
         title: 'Signed up!',
         text: 'Your request has been sent. Awaiting approval!',
-        confirmButtonColor: '#28a745'
+        confirmButtonColor: '#28a745',
+        width: 350,
+        customClass: { icon: 'small-icon' },
+        showClass: { popup: 'animate__animated animate__fadeInDown' },
+        hideClass: { popup: 'animate__animated animate__fadeOutUp' }
       });
 
       document.getElementById('name').value = '';
@@ -303,7 +319,11 @@
           icon: 'error',
           title: 'Missing fields',
           text: 'Please fill out both fields.',
-          confirmButtonColor: '#dc3545'
+          confirmButtonColor: '#dc3545',
+          width: 350,
+          customClass: { icon: 'small-icon' },
+          showClass: { popup: 'animate__animated animate__fadeInDown' },
+          hideClass: { popup: 'animate__animated animate__fadeOutUp' }
         });
         return;
       }
@@ -314,7 +334,11 @@
         icon: 'success',
         title: 'Thank you!',
         text: 'Your idea has been submitted!',
-        confirmButtonColor: '#28a745'
+        confirmButtonColor: '#28a745',
+        width: 350,
+        customClass: { icon: 'small-icon' },
+        showClass: { popup: 'animate__animated animate__fadeInDown' },
+        hideClass: { popup: 'animate__animated animate__fadeOutUp' }
       });
 
       document.getElementById('idea-name').value = '';
