@@ -1,1 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backgammon Tournament</title>
+
+  <!-- Firebase и SweetAlert (если нужно будет в будущем) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0a0a0a;
+      color: #f2eecb;
+      background-image: url('https://i.imgur.com/VGbWB7f.jpeg');
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.75);
+      z-index: -1;
+    }
+    header {
+      font-family: 'Roboto', sans-serif;
+      padding: 1rem;
+      text-align: center;
+      color: gold;
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 12px;
+    }
+    .section {
+      margin-bottom: 2rem;
+    }
+    .button {
+      background-color: #bfa046;
+      color: #0a0a0a;
+      border: none;
+      padding: 0.75rem 1.2rem;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.3s, transform 0.3s;
+      font-weight: bold;
+    }
+    .button:hover {
+      background-color: #ffcc00;
+      transform: scale(1.05);
+    }
+    .content {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: rgba(33, 59, 45, 0.9);
+      border-radius: 8px;
+    }
+    .group {
+      margin-bottom: 1rem;
+    }
+    a.back-link {
+      display: inline-block;
+      margin: 1rem 0;
+      color: gold;
+      text-decoration: none;
+    }
+    a.back-link:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      .button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>Backgammon Tournament</header>
+
+<div class="container">
+
+  <div class="section">
+    <h2>🏆 Tournament Overview</h2>
+    <p>Join the ultimate backgammon competition! Prove your skills and become the champion!</p>
+  </div>
+
+  <div class="section">
+    <h2>📅 Tournament Dates</h2>
+    <p><strong>September 5, 2025 — October 5, 2025</strong></p>
+  </div>
+
+  <div class="section">
+    <h2>Sections</h2>
+    <button class="button" onclick="toggleContent('groups')">Groups</button>
+    <button class="button" onclick="toggleContent('playoffs')">Playoffs</button>
+    <button class="button" onclick="toggleContent('rules')">Rules</button>
+  </div>
+
+  <div id="groups" class="content">
+    <h3>Group Stage</h3>
+    <div class="group"><strong>Group A</strong><br>Player 1<br>Player 2<br>Player 3<br>Player 4</div>
+    <div class="group"><strong>Group B</strong><br>Player 5<br>Player 6<br>Player 7<br>Player 8</div>
+    <div class="group"><strong>Group C</strong><br>Player 9<br>Player 10<br>Player 11<br>Player 12</div>
+    <div class="group"><strong>Group D</strong><br>Player 13<br>Player 14<br>Player 15<br>Player 16</div>
+    <div class="group"><strong>Group E</strong><br>Player 17<br>Player 18<br>Player 19<br>Player 20</div>
+  </div>
+
+  <div id="playoffs" class="content">
+    <h3>Playoffs Bracket</h3>
+    <p><strong>Quarterfinals:</strong><br>Winner Group A vs Runner-up Group B<br>Winner Group C vs Runner-up Group D</p>
+    <p><strong>Semifinals:</strong><br>Winner Quarterfinal 1 vs Winner Quarterfinal 2</p>
+    <p><strong>Final:</strong><br>Winner Semifinal 1 vs Winner Semifinal 2</p>
+  </div>
+
+  <div id="rules" class="content">
+    <h3>Rules</h3>
+    <ul>
+      <li>Standard backgammon rules apply.</li>
+      <li>Matches are best of 3 games.</li>
+      <li>Time limit per move: 2 minutes.</li>
+      <li>Top 2 from each group advance to playoffs.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <button class="button" onclick="window.location.href='index.html'">Back to Main</button>
+    <button class="button" onclick="window.location.href='sign-up.html'">Sign Up</button> <!-- Пока ссылку ставим, потом можно заменить -->
+  </div>
+
+</div>
+
+<script>
+function toggleContent(id) {
+  const content = document.getElementById(id);
+  if (content.style.display === "block") {
+    content.style.display = "none";
+  } else {
+    content.style.display = "block";
+  }
+}
+</script>
+
+</body>
+</html>
 
