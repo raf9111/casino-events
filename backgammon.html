@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Backgammon Tournament</title>
 
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
   <style>
     body {
@@ -20,6 +20,7 @@
       background-attachment: fixed;
       background-position: center;
     }
+
     body::before {
       content: "";
       position: fixed;
@@ -36,13 +37,14 @@
       height: 300px;
       background-size: cover;
       background-position: center;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
       color: gold;
-      position: relative;
     }
+
     .hero-image::before {
       content: "";
       background: rgba(0,0,0,0.5);
@@ -52,9 +54,19 @@
       width: 100%;
       height: 100%;
     }
+
     .hero-text {
       position: relative;
       z-index: 1;
+    }
+
+    .hero-text h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-text p {
+      font-size: 1.2rem;
     }
 
     .container {
@@ -81,11 +93,12 @@
       color: #0a0a0a;
       border: none;
       padding: 0.75rem 1.2rem;
+      cursor: pointer;
       border-radius: 8px;
       font-weight: bold;
-      cursor: pointer;
       transition: background-color 0.3s, transform 0.3s;
     }
+
     .button:hover {
       background-color: #ffcc00;
       transform: scale(1.05);
@@ -99,18 +112,34 @@
       border-radius: 8px;
     }
 
-    .group {
-      margin-bottom: 1.5rem;
+    .groups-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
     }
-    .player-card {
-      background: rgba(255, 255, 255, 0.1);
-      margin: 0.5rem 0;
-      padding: 0.5rem;
-      border-radius: 6px;
+
+    .group {
+      background-color: #1a1a1a;
+      padding: 0.8rem;
+      border-radius: 8px;
+      width: calc(50% - 0.5rem);
+      box-sizing: border-box;
+    }
+
+    .group-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: gold;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    .player {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      font-size: 0.95rem;
+      margin: 0.3rem 0;
+      font-size: 0.9rem;
     }
 
     a.back-link {
@@ -119,6 +148,7 @@
       color: gold;
       text-decoration: none;
     }
+
     a.back-link:hover {
       text-decoration: underline;
     }
@@ -127,9 +157,19 @@
       .button {
         width: 100%;
       }
+      .hero-text h1 {
+        font-size: 2rem;
+      }
+      .hero-text p {
+        font-size: 1rem;
+      }
+      .group {
+        width: calc(50% - 0.5rem);
+      }
     }
   </style>
 </head>
+
 <body>
 
 <div class="hero-image">
@@ -157,7 +197,9 @@
 
   <div id="groups" class="content">
     <h3>Group Stage</h3>
-    <div id="groups-container"></div>
+    <div id="groups-container" class="groups-grid">
+      <!-- Сюда будут подгружаться группы -->
+    </div>
   </div>
 
   <div id="playoffs" class="content">
@@ -171,62 +213,74 @@
     <h3>Rules</h3>
     <ul>
       <li>Standard backgammon rules apply.</li>
-      <li>Group games play till 11pts</li>
-      <li>Time limit - unknown yet</li>
+      <li>Group games play till 11pts.</li>
+      <li>Time limit - unknown yet.</li>
       <li>Top 3 from each group advance to playoffs.</li>
     </ul>
   </div>
 
   <div class="section">
-    <button class="button" onclick="window.location.href='index.html'">Back to Main</button>
+    <a href="index.html" class="back-link">⬅ Back to Main</a>
   </div>
 
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
-  authDomain: "casino-events-8008d.firebaseapp.com",
-  projectId: "casino-events-8008d",
-  storageBucket: "casino-events-8008d.appspot.com",
-  messagingSenderId: "13547117273",
-  appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
+    authDomain: "casino-events-8008d.firebaseapp.com",
+    projectId: "casino-events-8008d",
+    storageBucket: "casino-events-8008d.appspot.com",
+    messagingSenderId: "13547117273",
+    appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
+  };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-function toggleContent(id) {
-  const allContents = document.querySelectorAll('.content');
-  allContents.forEach(content => {
-    if (content.id === id) {
-      content.style.display = (content.style.display === "block") ? "none" : "block";
-    } else {
-      content.style.display = "none";
-    }
-  });
-}
-
-async function loadGroups() {
-  const groupsContainer = document.getElementById("groups-container");
-  const snapshot = await db.collection("groups").get();
-  groupsContainer.innerHTML = "";
-
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    const groupDiv = document.createElement("div");
-    groupDiv.classList.add("group");
-    groupDiv.innerHTML = `<strong>${data.groupName}</strong>`;
-
-    data.members.forEach(member => {
-      groupDiv.innerHTML += `<div class="player-card">${member.name} <span>${member.score || 0} pts</span></div>`;
+  function toggleContent(id) {
+    const allContents = document.querySelectorAll('.content');
+    allContents.forEach(content => {
+      if (content.id === id) {
+        content.style.display = (content.style.display === "block") ? "none" : "block";
+      } else {
+        content.style.display = "none";
+      }
     });
+  }
 
-    groupsContainer.appendChild(groupDiv);
+  async function loadGroups() {
+    const groupsContainer = document.getElementById('groups-container');
+    groupsContainer.innerHTML = '';
+
+    const groupsSnapshot = await db.collection('groups').get();
+    groupsSnapshot.forEach(groupDoc => {
+      const data = groupDoc.data();
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'group';
+
+      let membersHTML = '';
+      data.members.forEach(member => {
+        membersHTML += `
+          <div class="player">
+            <span>${member.name}</span>
+            <span>${member.points || 0} pts</span>
+          </div>
+        `;
+      });
+
+      groupDiv.innerHTML = `
+        <div class="group-title">${data.groupName}</div>
+        ${membersHTML}
+      `;
+
+      groupsContainer.appendChild(groupDiv);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadGroups();
   });
-}
-
-document.addEventListener('DOMContentLoaded', loadGroups);
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
