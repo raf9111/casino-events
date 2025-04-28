@@ -11,7 +11,7 @@
       color: #f2f2f2;
       padding: 2rem;
     }
-    h1 {
+    h1, h2 {
       color: gold;
     }
     .participant {
@@ -41,48 +41,32 @@
       border-radius: 5px;
       cursor: pointer;
       margin-top: 0.5rem;
+      margin-left: 0.5rem;
     }
-    #login-form {
-      max-width: 300px;
-      margin: 0 auto;
-      text-align: center;
-      margin-top: 5rem;
-    }
-    #login-form input {
-      padding: 0.5rem;
-      margin: 0.5rem;
-      width: 100%;
-    }
-    #login-form button {
-      padding: 0.5rem 1rem;
-      background-color: gold;
+    .button {
+      background-color: #555;
+      color: white;
       border: none;
-      color: #121212;
-      font-weight: bold;
+      padding: 0.7rem 1.5rem;
+      margin-right: 1rem;
+      margin-top: 1rem;
+      border-radius: 8px;
       cursor: pointer;
-      border-radius: 5px;
-    }
-    #admin-panel {
-      display: none;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-  <!-- Форма логина -->
-  <div id="login-form">
-    <h2>Admin login</h2>
-    <input type="password" id="password-input" placeholder="Password" />
-    <button onclick="checkPassword()">Login</button>
-    <p id="login-error" style="color: red; display: none;">Wrong pass</p>
+  <h1>Admin Panel</h1>
+  <div id="participants-list"></div>
+
+  <div style="margin-top: 2rem;">
+    <h2>Manage Groups</h2>
+    <button class="button" id="distribute-btn">Distribute Groups</button>
+    <button class="button" id="reset-btn" style="background-color: #dc3545;">Reset Groups</button>
   </div>
 
-  <!-- Админ-панель -->
-  <div id="admin-panel">
-    <h1>Admin Panel</h1>
-    <div id="participants-list"></div>
-  </div>
-
-  <!-- Firebase + скрипт -->
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import {
@@ -101,43 +85,24 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const adminPassword = "casino123"; // ← Твой пароль
-    const loginForm = document.getElementById("login-form");
-    const adminPanel = document.getElementById("admin-panel");
-    const passwordInput = document.getElementById("password-input");
-    const loginError = document.getElementById("login-error");
-
-    window.checkPassword = () => {
-      const input = passwordInput.value;
-      if (input === adminPassword) {
-        loginForm.style.display = "none";
-        adminPanel.style.display = "block";
-        loadParticipants();
-      } else {
-        loginError.style.display = "block";
-      }
-    };
-
     const participantsList = document.getElementById("participants-list");
 
+    // Функция отправки уведомлений в Telegram
     async function sendTelegramNotification(message) {
       const token = "8129557214:AAEzFFKl7u1cVv8I8c8Rj_2lW7_MoOdgWU8";
       const chatId = "231694521";
       const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
-      const response = await fetch(url, {
+      await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chat_id: chatId, text: message })
       });
-
-      const data = await response.json();
-      if (!data.ok) {
-        console.error("Ошибка отправки в Telegram:", data);
-      }
     }
 
+    // Загрузка участников
     async function loadParticipants() {
+      participantsList.innerHTML = "";
       const querySnapshot = await getDocs(collection(db, "participants"));
       querySnapshot.forEach((docSnap) => {
         const data = docSnap.data();
@@ -160,18 +125,78 @@
           });
           approveBtn.disabled = true;
           approveBtn.innerText = "Approved";
-          await sendTelegramNotification(`Участник ${data.name} был одобрен!`);
+          await sendTelegramNotification(`✅ Participant ${data.name} was approved!`);
         });
 
         deleteBtn.addEventListener("click", async () => {
           await deleteDoc(doc(db, "participants", docSnap.id));
           div.remove();
-          await sendTelegramNotification(`Участник ${data.name} был удален!`);
+          await sendTelegramNotification(`❌ Participant ${data.name} was deleted.`);
         });
 
         participantsList.appendChild(div);
       });
     }
+
+    // Рандомное распределение по группам
+    async function distributeGroups() {
+      const approvedSnapshot = await getDocs(collection(db, "participants"));
+      const approvedParticipants = [];
+
+      approvedSnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.approved) {
+          approvedParticipants.push(data.name);
+        }
+      });
+
+      if (approvedParticipants.length === 0) {
+        Swal.fire('No participants!', 'There are no approved participants.', 'warning');
+        return;
+      }
+
+      approvedParticipants.sort(() => Math.random() - 0.5);
+
+      const groupSize = 4;
+      const groups = [];
+      for (let i = 0; i < approvedParticipants.length; i += groupSize) {
+        groups.push(approvedParticipants.slice(i, i + groupSize));
+      }
+
+      const groupsRef = collection(db, "groups");
+      const oldGroups = await getDocs(groupsRef);
+      oldGroups.forEach(async (docSnap) => {
+        await deleteDoc(doc(db, "groups", docSnap.id));
+      });
+
+      groups.forEach(async (group, index) => {
+        await addDoc(groupsRef, {
+          groupName: `Group ${String.fromCharCode(65 + index)}`,
+          members: group
+        });
+      });
+
+      Swal.fire('Groups created!', 'Participants were randomly distributed.', 'success');
+    }
+
+    // Сброс всех групп
+    async function resetGroups() {
+      const groupsRef = collection(db, "groups");
+      const oldGroups = await getDocs(groupsRef);
+      oldGroups.forEach(async (docSnap) => {
+        await deleteDoc(doc(db, "groups", docSnap.id));
+      });
+
+      Swal.fire('Groups reset!', 'All groups have been deleted.', 'info');
+    }
+
+    // При загрузке страницы
+    window.addEventListener('DOMContentLoaded', () => {
+      loadParticipants();
+
+      document.getElementById('distribute-btn').addEventListener('click', distributeGroups);
+      document.getElementById('reset-btn').addEventListener('click', resetGroups);
+    });
   </script>
 </body>
 </html>
