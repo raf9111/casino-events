@@ -4,13 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Backgammon Tournament</title>
+
+  <!-- Firebase и SweetAlert (на будущее) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #0b3d2e;
+      background-color: #0a0a0a;
       color: #f2eecb;
       background-image: url('https://i.imgur.com/VGbWB7f.jpeg');
       background-size: cover;
@@ -24,153 +29,184 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background-color: rgba(0, 0, 0, 0.7);
+      background-color: rgba(0, 0, 0, 0.75);
       z-index: -1;
     }
-    header {
-      font-family: 'Roboto', sans-serif;
-      padding: 1rem 2rem;
-      text-align: center;
-      color: gold;
-      font-size: 2.5rem;
-      letter-spacing: 2px;
-    }
-    .tournament-banner {
-      width: 100%;
-      height: 200px;
-      background-image: url('https://i.imgur.com/v2ewA5v.jpeg');
+
+    .hero-image {
+      background-image: url('https://i.imgur.com/v2ewA5v.jpeg'); /* Фон нард */
+      height: 300px;
       background-size: cover;
       background-position: center;
-      margin-bottom: 1rem;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: gold;
     }
+    .hero-image::before {
+      content: "";
+      background: rgba(0,0,0,0.5);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .hero-text {
+      position: relative;
+      z-index: 1;
+    }
+    .hero-text h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .hero-text p {
+      font-size: 1.2rem;
+    }
+
     .container {
       max-width: 900px;
       margin: 2rem auto;
       padding: 1rem;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 12px;
+    }
+    .section {
+      margin-bottom: 2rem;
     }
     .button {
-      background-color: rgba(0, 0, 0, 0.6);
-      color: #ffe066;
+      background-color: #bfa046;
+      color: #0a0a0a;
       border: none;
-      padding: 0.7rem 1.2rem;
-      margin: 0.5rem;
+      padding: 0.75rem 1.2rem;
+      margin: 0.5rem 0.5rem 0.5rem 0;
       cursor: pointer;
       border-radius: 8px;
+      transition: background-color 0.3s, transform 0.3s;
+      font-weight: bold;
     }
-    .form-container {
+    .button:hover {
+      background-color: #ffcc00;
+      transform: scale(1.05);
+    }
+    .buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 600px) {
+  .buttons-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+    .content {
+      display: none;
       margin-top: 1rem;
       padding: 1rem;
-      background-color: rgba(0, 0, 0, 0.6);
+      background-color: rgba(33, 59, 45, 0.9);
       border-radius: 8px;
-      display: none;
     }
-    h3 {
-      color: #ffe066;
-      margin-top: 1rem;
+    .group {
+      margin-bottom: 1rem;
     }
-    ul {
-      list-style: none;
-      padding: 0;
+    a.back-link {
+      display: inline-block;
+      margin: 1rem 0;
+      color: gold;
+      text-decoration: none;
     }
-    ul li {
-      padding: 0.3rem 0;
+    a.back-link:hover {
+      text-decoration: underline;
     }
-    .tournament-details {
-      text-align: center;
-      margin-top: 1rem;
-      font-size: 1.2rem;
-      color: #c2b280;
+    @media (max-width: 600px) {
+      .button {
+        width: 100%;
+      }
+      .hero-text h1 {
+        font-size: 2rem;
+      }
+      .hero-text p {
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
+
 <body>
 
-<header>Backgammon Tournament</header>
-<div class="tournament-banner"></div>
-
-<div class="tournament-details">
-  Tournament Dates: September 1 – September 30, 2025
+<div class="hero-image">
+  <div class="hero-text">
+    <h1>Backgammon Tournament 2025</h1>
+    <p>September 5, 2025 — October 5, 2025</p>
+  </div>
 </div>
 
 <div class="container">
-  <button class="button" id="groups-btn">Groups</button>
-  <button class="button" id="playoffs-btn">Playoffs</button>
-  <button class="button" id="rules-btn">Rules</button>
 
-  <div id="groups-container" class="form-container"></div>
-  <div id="playoffs-container" class="form-container">
-    <h3>Playoffs</h3>
-    <p>Playoff bracket will be available after group stages.</p>
+  <div class="section">
+    <h2>🏆 Tournament Overview</h2>
+    <p>Join the ultimate backgammon competition!</p>
   </div>
-  <div id="rules-container" class="form-container">
+
+  <div class="section">
+    <h2>Sections</h2>
+    <div class="buttons-container">
+    <button class="button" onclick="toggleContent('groups')">Groups</button>
+    <button class="button" onclick="toggleContent('playoffs')">Playoffs</button>
+    <button class="button" onclick="toggleContent('rules')">Rules</button>
+      </div>
+  </div>
+
+  <div id="groups" class="content">
+    <h3>Group Stage</h3>
+    <div class="group"><strong>Group A</strong><br>Player 1<br>Player 2<br>Player 3<br>Player 4</div>
+    <div class="group"><strong>Group B</strong><br>Player 5<br>Player 6<br>Player 7<br>Player 8</div>
+    <div class="group"><strong>Group C</strong><br>Player 9<br>Player 10<br>Player 11<br>Player 12</div>
+    <div class="group"><strong>Group D</strong><br>Player 13<br>Player 14<br>Player 15<br>Player 16</div>
+    <div class="group"><strong>Group E</strong><br>Player 17<br>Player 18<br>Player 19<br>Player 20</div>
+  </div>
+
+  <div id="playoffs" class="content">
+    <h3>Playoffs Bracket</h3>
+    <p><strong>Quarterfinals:</strong><br>Winner Group A vs Runner-up Group B<br>Winner Group C vs Runner-up Group D</p>
+    <p><strong>Semifinals:</strong><br>Winner Quarterfinal 1 vs Winner Quarterfinal 2</p>
+    <p><strong>Final:</strong><br>Winner Semifinal 1 vs Winner Semifinal 2</p>
+  </div>
+
+  <div id="rules" class="content">
     <h3>Rules</h3>
     <ul>
-      <li>✔ Each match is best of 3 games.</li>
-      <li>✔ Winner gets 2 points, loser 0.</li>
-      <li>✔ Top 2 players from each group advance to playoffs.</li>
-      <li>✔ Fair play and sportsmanship are mandatory!</li>
+      <li>Standard backgammon rules apply.</li>
+      <li>Group games play till 11pts</li>
+      <li>Time limit - unknown yet</li>
+      <li>Top 3? from each group advance to playoffs.</li>
     </ul>
   </div>
+
+  <div class="section">
+    <button class="button" onclick="window.location.href='index.html'">Back to Main</button>
+  </div>
+
 </div>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
-    authDomain: "casino-events-8008d.firebaseapp.com",
-    projectId: "casino-events-8008d",
-    storageBucket: "casino-events-8008d.firebasestorage.app",
-    messagingSenderId: "13547117273",
-    appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  async function loadGroups() {
-    const groupsContainer = document.getElementById('groups-container');
-    groupsContainer.innerHTML = '';
-
-    const groupsRef = db.collection("groups");
-    const snapshot = await groupsRef.get();
-
-    if (snapshot.empty) {
-      groupsContainer.innerHTML = '<p>No groups created yet.</p>';
-      return;
+function toggleContent(id) {
+  const allContents = document.querySelectorAll('.content');
+  allContents.forEach(content => {
+    if (content.id === id) {
+      // Если нажал на открытую секцию - закрыть её
+      content.style.display = (content.style.display === "block") ? "none" : "block";
+    } else {
+      // Все остальные секции закрыть
+      content.style.display = "none";
     }
-
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const groupDiv = document.createElement('div');
-      groupDiv.innerHTML = `<h3>${data.groupName}</h3><ul>${
-        data.members.map(member => `<li>${member}</li>`).join('')
-      }</ul>`;
-      groupsContainer.appendChild(groupDiv);
-    });
-  }
-
-  function toggleContent(id) {
-    const allContents = document.querySelectorAll('.form-container');
-    allContents.forEach(content => {
-      if (content.id === id) {
-        content.style.display = (content.style.display === "block") ? "none" : "block";
-      } else {
-        content.style.display = "none";
-      }
-    });
-  }
-
-  document.getElementById('groups-btn').addEventListener('click', async () => {
-    toggleContent('groups-container');
-    await loadGroups();
   });
-
-  document.getElementById('playoffs-btn').addEventListener('click', () => {
-    toggleContent('playoffs-container');
-  });
-
-  document.getElementById('rules-btn').addEventListener('click', () => {
-    toggleContent('rules-container');
-  });
+}
 </script>
 
 </body>
