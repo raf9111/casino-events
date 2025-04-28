@@ -3,220 +3,271 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel</title>
+  <title>Backgammon Tournament</title>
+
+  <!-- Firebase и SweetAlert -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #f2f2f2;
-      padding: 2rem;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0a0a0a;
+      color: #f2eecb;
+      background-image: url('https://i.imgur.com/VGbWB7f.jpeg');
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
     }
-    h1 {
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.75);
+      z-index: -1;
+    }
+    .hero-image {
+      background-image: url('https://i.imgur.com/v2ewA5v.jpeg');
+      height: 300px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
       color: gold;
     }
-    .participant {
-      background-color: #1e1e1e;
-      border: 1px solid #333;
+    .hero-image::before {
+      content: "";
+      background: rgba(0,0,0,0.5);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .hero-text {
+      position: relative;
+      z-index: 1;
+    }
+    .hero-text h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .hero-text p {
+      font-size: 1.2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
       padding: 1rem;
-      margin-bottom: 1rem;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 12px;
+    }
+    .section {
+      margin-bottom: 2rem;
+    }
+    .button {
+      background-color: #bfa046;
+      color: #0a0a0a;
+      border: none;
+      padding: 0.75rem 1.2rem;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.3s, transform 0.3s;
+      font-weight: bold;
+    }
+    .button:hover {
+      background-color: #ffcc00;
+      transform: scale(1.05);
+    }
+    .buttons-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .content {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: rgba(33, 59, 45, 0.9);
       border-radius: 8px;
     }
-    .participant p {
-      margin: 0.3rem 0;
-      font-size: 0.9rem;
+    .group-block {
+      margin-bottom: 2rem;
     }
-    .approve-btn {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 0.5rem;
-      margin-right: 0.5rem;
+    .group-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
     }
-    .delete-btn {
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 0.5rem;
+    .group-table th, .group-table td {
+      border: 1px solid #3c6650;
+      padding: 8px;
+      text-align: left;
     }
-    .group-btn {
-      background-color: #ffc107;
-      color: black;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      margin: 0.5rem 0.5rem 1rem 0;
+    .group-table th {
+      background-color: #213b2d;
+    }
+    .score-input {
+      width: 60px;
+      padding: 4px;
+      border-radius: 4px;
+      border: 1px solid #888;
+      background-color: #1e1e1e;
+      color: #f2eecb;
+    }
+    a.back-link {
+      display: inline-block;
+      margin: 1rem 0;
+      color: gold;
+      text-decoration: none;
+    }
+    a.back-link:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      .button {
+        width: 100%;
+      }
+      .hero-text h1 {
+        font-size: 2rem;
+      }
+      .hero-text p {
+        font-size: 1rem;
+      }
     }
   </style>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const password = prompt('Enter admin password:');
-      const correctPassword = "casino1";
-
-      if (password !== correctPassword) {
-        alert('Access denied.');
-        window.location.href = '/';
-      }
-    });
-  </script>
 </head>
-<body>
-  <h1>Admin Panel</h1>
 
-  <div>
-    <button id="distribute-btn" class="group-btn">Distribute Groups</button>
-    <button id="reset-btn" class="group-btn">Reset Groups</button>
+<body>
+
+<div class="hero-image">
+  <div class="hero-text">
+    <h1>Backgammon Tournament 2025</h1>
+    <p>September 5, 2025 — October 5, 2025</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="section">
+    <h2>🏆 Tournament Overview</h2>
+    <p>Join the ultimate backgammon competition!</p>
   </div>
 
-  <div id="participants-list"></div>
+  <div class="section">
+    <h2>Sections</h2>
+    <div class="buttons-container">
+      <button class="button" onclick="toggleContent('groups')">Groups</button>
+      <button class="button" onclick="toggleContent('playoffs')">Playoffs</button>
+      <button class="button" onclick="toggleContent('rules')">Rules</button>
+    </div>
+  </div>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs, query, orderBy,
-      addDoc, updateDoc, deleteDoc, doc
-    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  <div id="groups" class="content">
+    <div id="groups-content">Loading groups...</div>
+  </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
-      authDomain: "casino-events-8008d.firebaseapp.com",
-      projectId: "casino-events-8008d",
-      storageBucket: "casino-events-8008d.appspot.com",
-      messagingSenderId: "13547117273",
-      appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
-    };
+  <div id="playoffs" class="content">
+    <h3>Playoffs Bracket</h3>
+    <p><strong>Quarterfinals:</strong><br>Winner Group A vs Runner-up Group B<br>Winner Group C vs Runner-up Group D</p>
+    <p><strong>Semifinals:</strong><br>Winner Quarterfinal 1 vs Winner Quarterfinal 2</p>
+    <p><strong>Final:</strong><br>Winner Semifinal 1 vs Winner Semifinal 2</p>
+  </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  <div id="rules" class="content">
+    <h3>Rules</h3>
+    <ul>
+      <li>Standard backgammon rules apply.</li>
+      <li>Group games play till 11pts</li>
+      <li>Top players from each group advance to playoffs.</li>
+    </ul>
+  </div>
 
-    const participantsList = document.getElementById("participants-list");
+  <div class="section">
+    <button class="button" onclick="window.location.href='index.html'">Back to Main</button>
+  </div>
 
-    async function sendTelegramNotification(message) {
-      const token = "8129557214:AAEzFFKl7u1cVv8I8c8Rj_2lW7_MoOdgWU8";
-      const chatId = "231694521";
-      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+</div>
 
-      await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId, text: message })
-      });
-    }
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import {
+    getFirestore, collection, getDocs
+  } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    async function loadParticipants() {
-      const querySnapshot = await getDocs(
-        query(collection(db, "participants"), orderBy("timestamp"))
-      );
+  const firebaseConfig = {
+    apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
+    authDomain: "casino-events-8008d.firebaseapp.com",
+    projectId: "casino-events-8008d",
+    storageBucket: "casino-events-8008d.appspot.com",
+    messagingSenderId: "13547117273",
+    appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
+  };
 
-      participantsList.innerHTML = '';
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-      querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const div = document.createElement("div");
-        div.className = "participant";
-        div.innerHTML = `
-          <p><strong>Name:</strong> ${data.name}</p>
-          <p><strong>Comment:</strong> ${data.comment || ""}</p>
-          <p><strong>Status:</strong> ${data.status}</p>
-          <button class="approve-btn">Approve</button>
-          <button class="delete-btn">Delete</button>
-        `;
+  const groupsContainer = document.getElementById('groups-content');
 
-        const approveBtn = div.querySelector(".approve-btn");
-        const deleteBtn = div.querySelector(".delete-btn");
+  async function loadGroups() {
+    const snapshot = await getDocs(collection(db, 'groups'));
 
-        approveBtn.addEventListener("click", async () => {
-          await updateDoc(doc(db, "participants", docSnap.id), {
-            status: "approved",
-            approved: true
-          });
-          approveBtn.disabled = true;
-          approveBtn.innerText = "Approved";
-          await sendTelegramNotification(`Участник ${data.name} был одобрен!`);
-        });
+    groupsContainer.innerHTML = '';
 
-        deleteBtn.addEventListener("click", async () => {
-          await deleteDoc(doc(db, "participants", docSnap.id));
-          div.remove();
-          await sendTelegramNotification(`Участник ${data.name} был удален!`);
-        });
-
-        participantsList.appendChild(div);
-      });
-    }
-
-    async function createGroups() {
-      const participantsRef = collection(db, 'participants');
-      const groupsRef = collection(db, 'groups');
-
-      const existingGroups = await getDocs(groupsRef);
-      existingGroups.forEach(doc => deleteDoc(doc.ref));
-
-      const snapshot = await getDocs(query(participantsRef, orderBy('timestamp')));
-      const participants = [];
-      snapshot.forEach(doc => {
-        if (doc.data().approved) {
-          participants.push(doc.data().name);
-        }
-      });
-
-      if (participants.length === 0) {
-        Swal.fire('No participants', 'There are no approved participants yet.', 'warning');
-        return;
-      }
-
-      participants.sort(() => Math.random() - 0.5);
-
-      const maxGroupSize = 6;
-      const total = participants.length;
-      let numGroups = Math.ceil(total / maxGroupSize);
-
-      while (numGroups > 1 && Math.ceil(total / numGroups) > maxGroupSize) {
-        numGroups++;
-      }
-
-      const groups = Array.from({ length: numGroups }, () => []);
-
-      participants.forEach((participant, index) => {
-        groups[index % numGroups].push(participant);
-      });
-
-      for (let i = 0; i < groups.length; i++) {
-        await addDoc(groupsRef, {
-          groupName: `Group ${String.fromCharCode(65 + i)}`,
-          members: groups[i]
-        });
-      }
-
-      Swal.fire('Groups Created', `Created ${groups.length} groups.`, 'success');
-    }
-
-    async function resetGroups() {
-      const groupsRef = collection(db, 'groups');
-      const existingGroups = await getDocs(groupsRef);
-      existingGroups.forEach(doc => deleteDoc(doc.ref));
-
-      Swal.fire('Groups Reset', 'All groups have been deleted.', 'success');
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const distributeBtn = document.getElementById('distribute-btn');
-      const resetBtn = document.getElementById('reset-btn');
-
-      distributeBtn.addEventListener('click', createGroups);
-      resetBtn.addEventListener('click', resetGroups);
-
-      loadParticipants();
+    snapshot.forEach((doc) => {
+      const groupData = doc.data();
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'group-block';
+      groupDiv.innerHTML = `
+        <h3>${groupData.groupName}</h3>
+        <table class="group-table">
+          <thead>
+            <tr><th>Player</th><th>Score</th></tr>
+          </thead>
+          <tbody>
+            ${groupData.members.map(player => `
+              <tr>
+                <td>${player}</td>
+                <td><input type="number" class="score-input" placeholder="0" min="0"></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      groupsContainer.appendChild(groupDiv);
     });
-  </script>
+  }
 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  function toggleContent(id) {
+    const allContents = document.querySelectorAll('.content');
+    allContents.forEach(content => {
+      if (content.id === id) {
+        content.style.display = (content.style.display === "block") ? "none" : "block";
+      } else {
+        content.style.display = "none";
+      }
+    });
+
+    if (id === 'groups') {
+      loadGroups();
+    }
+  }
+
+  window.toggleContent = toggleContent;
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
 </html>
