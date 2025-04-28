@@ -54,6 +54,17 @@
       cursor: pointer;
     }
   </style>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const password = prompt('Enter admin password:');
+    const correctPassword = "yourpassword"; // 🔥 здесь поставь свой пароль!
+
+    if (password !== correctPassword) {
+      alert('Access denied.');
+      window.location.href = '/'; // 🔥 перенаправление обратно на главную
+    }
+  });
+</script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
