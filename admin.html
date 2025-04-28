@@ -150,45 +150,52 @@
     }
 
     // Рандомное распределение по группам
-    async function distributeGroups() {
-      const approvedSnapshot = await getDocs(collection(db, "participants"));
-      const approvedParticipants = [];
+   async function createGroups() {
+  const participantsRef = db.collection('participants');
+  const groupsRef = db.collection('groups');
 
-      approvedSnapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.approved) {
-          approvedParticipants.push(data.name);
-        }
-      });
+  // Чистим старые группы
+  const existingGroups = await groupsRef.get();
+  existingGroups.forEach(doc => doc.ref.delete());
 
-      if (approvedParticipants.length === 0) {
-        Swal.fire('No participants!', 'There are no approved participants.', 'warning');
-        return;
-      }
+  const snapshot = await participantsRef.where('approved', '==', true).get();
+  const participants = [];
+  snapshot.forEach(doc => participants.push(doc.data().name));
 
-      approvedParticipants.sort(() => Math.random() - 0.5);
+  if (participants.length === 0) {
+    Swal.fire('No participants', 'There are no approved participants yet.', 'warning');
+    return;
+  }
 
-      const groupSize = 4;
-      const groups = [];
-      for (let i = 0; i < approvedParticipants.length; i += groupSize) {
-        groups.push(approvedParticipants.slice(i, i + groupSize));
-      }
+  // Перемешиваем участников
+  participants.sort(() => Math.random() - 0.5);
 
-      const groupsRef = collection(db, "groups");
-      const oldGroups = await getDocs(groupsRef);
-      oldGroups.forEach(async (docSnap) => {
-        await deleteDoc(doc(db, "groups", docSnap.id));
-      });
+  // Определяем количество групп
+  const maxGroupSize = 6;
+  const minGroupSize = 4;
+  const total = participants.length;
+  let numGroups = Math.ceil(total / maxGroupSize);
 
-      groups.forEach(async (group, index) => {
-        await addDoc(groupsRef, {
-          groupName: `Group ${String.fromCharCode(65 + index)}`,
-          members: group
-        });
-      });
+  while (numGroups > 1 && Math.ceil(total / numGroups) > maxGroupSize) {
+    numGroups++;
+  }
 
-      Swal.fire('Groups created!', 'Participants were randomly distributed.', 'success');
-    }
+  const groups = Array.from({ length: numGroups }, () => []);
+
+  participants.forEach((participant, index) => {
+    groups[index % numGroups].push(participant);
+  });
+
+  // Сохраняем группы в базу данных
+  for (let i = 0; i < groups.length; i++) {
+    await groupsRef.add({
+      groupName: `Group ${String.fromCharCode(65 + i)}`,
+      members: groups[i]
+    });
+  }
+
+  Swal.fire('Groups Created', `Created ${groups.length} groups.`, 'success');
+}
 
     // Сброс всех групп
     async function resetGroups() {
