@@ -92,6 +92,16 @@
       messagingSenderId: "13547117273",
       appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
     };
+    
+document.addEventListener('DOMContentLoaded', () => {
+  const distributeBtn = document.getElementById('distribute-btn');
+  const resetBtn = document.getElementById('reset-btn');
+
+  distributeBtn.addEventListener('click', createGroups);
+  resetBtn.addEventListener('click', resetGroups);
+
+  loadParticipants();
+});
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -198,15 +208,13 @@
 }
 
     // Сброс всех групп
-    async function resetGroups() {
-      const groupsRef = collection(db, "groups");
-      const oldGroups = await getDocs(groupsRef);
-      oldGroups.forEach(async (docSnap) => {
-        await deleteDoc(doc(db, "groups", docSnap.id));
-      });
+   async function resetGroups() {
+  const groupsRef = db.collection('groups');
+  const existingGroups = await groupsRef.get();
+  existingGroups.forEach(doc => doc.ref.delete());
 
-      Swal.fire('Groups reset!', 'All groups have been deleted.', 'info');
-    }
+  Swal.fire('Groups Reset', 'All groups have been deleted.', 'success');
+}
 
     // При загрузке страницы
     window.addEventListener('DOMContentLoaded', () => {
