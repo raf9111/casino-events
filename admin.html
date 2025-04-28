@@ -14,36 +14,10 @@
     h1 {
       color: gold;
     }
-    .participant {
-      background-color: #1e1e1e;
-      border: 1px solid #333;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
+    .hidden {
+      display: none;
     }
-    .participant p {
-      margin: 0.3rem 0;
-    }
-    .approve-btn {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 0.5rem;
-      margin-right: 0.5rem;
-    }
-    .delete-btn {
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 0.5rem;
-    }
-    .group-btn {
+    .btn {
       background-color: #ffc107;
       color: black;
       border: none;
@@ -52,36 +26,49 @@
       cursor: pointer;
       margin: 0.5rem 0.5rem 1rem 0;
     }
-  </style>
-   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const password = prompt('Enter admin password:');
-    const correctPassword = "casino1"; // 🔥 здесь поставь свой пароль!
-
-    if (password !== correctPassword) {
-      alert('Access denied.');
-      window.location.href = '/'; // 🔥 перенаправление обратно на главную
+    .participant, .group {
+      background-color: #1e1e1e;
+      border: 1px solid #333;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
     }
-  });
-</script>
+    .participant p, .group p {
+      margin: 0.3rem 0;
+    }
+    input[type="number"] {
+      width: 50px;
+      margin-left: 10px;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const password = prompt('Enter admin password:');
+      const correctPassword = "casino1";
+      if (password !== correctPassword) {
+        alert('Access denied.');
+        window.location.href = '/';
+      }
+    });
+  </script>
 </head>
 <body>
   <h1>Admin Panel</h1>
 
   <div>
-    <button id="distribute-btn" class="group-btn">Distribute Groups</button>
-    <button id="reset-btn" class="group-btn">Reset Groups</button>
+    <button id="view-registrations-btn" class="btn">View Registrations</button>
+    <button id="view-groups-btn" class="btn">View Groups & Scores</button>
+    <button id="distribute-btn" class="btn">Distribute Groups</button>
+    <button id="reset-btn" class="btn">Reset Groups</button>
+    <button id="save-scores-btn" class="btn hidden">Save Scores</button>
   </div>
 
-  <div id="participants-list"></div>
+  <div id="participants-section" class="hidden"></div>
+  <div id="groups-section" class="hidden"></div>
 
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs, query, orderBy,
-      addDoc, updateDoc, deleteDoc, doc
-    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
@@ -95,7 +82,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const participantsList = document.getElementById("participants-list");
+    const participantsSection = document.getElementById('participants-section');
+    const groupsSection = document.getElementById('groups-section');
+    const viewRegistrationsBtn = document.getElementById('view-registrations-btn');
+    const viewGroupsBtn = document.getElementById('view-groups-btn');
+    const distributeBtn = document.getElementById('distribute-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const saveScoresBtn = document.getElementById('save-scores-btn');
 
     async function sendTelegramNotification(message) {
       const token = "8129557214:AAEzFFKl7u1cVv8I8c8Rj_2lW7_MoOdgWU8";
@@ -110,29 +103,24 @@
     }
 
     async function loadParticipants() {
-      const querySnapshot = await getDocs(
-        query(collection(db, "participants"), orderBy("timestamp"))
-      );
-
-      participantsList.innerHTML = '';
-
-      querySnapshot.forEach((docSnap) => {
+      participantsSection.innerHTML = '';
+      const snapshot = await getDocs(query(collection(db, 'participants'), orderBy('timestamp')));
+      snapshot.forEach(docSnap => {
         const data = docSnap.data();
-        const div = document.createElement("div");
-        div.className = "participant";
+        const div = document.createElement('div');
+        div.className = 'participant';
         div.innerHTML = `
           <p><strong>Name:</strong> ${data.name}</p>
           <p><strong>Comment:</strong> ${data.comment || ""}</p>
           <p><strong>Status:</strong> ${data.status}</p>
-          <button class="approve-btn">Approve</button>
-          <button class="delete-btn">Delete</button>
+          <button class="btn approve">Approve</button>
+          <button class="btn delete">Delete</button>
         `;
+        const approveBtn = div.querySelector('.approve');
+        const deleteBtn = div.querySelector('.delete');
 
-        const approveBtn = div.querySelector(".approve-btn");
-        const deleteBtn = div.querySelector(".delete-btn");
-
-        approveBtn.addEventListener("click", async () => {
-          await updateDoc(doc(db, "participants", docSnap.id), {
+        approveBtn.addEventListener('click', async () => {
+          await updateDoc(doc(db, 'participants', docSnap.id), {
             status: "approved",
             approved: true
           });
@@ -141,21 +129,62 @@
           await sendTelegramNotification(`Участник ${data.name} был одобрен!`);
         });
 
-        deleteBtn.addEventListener("click", async () => {
-          await deleteDoc(doc(db, "participants", docSnap.id));
+        deleteBtn.addEventListener('click', async () => {
+          await deleteDoc(doc(db, 'participants', docSnap.id));
           div.remove();
           await sendTelegramNotification(`Участник ${data.name} был удален!`);
         });
 
-        participantsList.appendChild(div);
+        participantsSection.appendChild(div);
       });
     }
 
-    async function createGroups() {
+    async function loadGroups() {
+      groupsSection.innerHTML = '';
+      const snapshot = await getDocs(collection(db, 'groups'));
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const div = document.createElement('div');
+        div.className = 'group';
+        div.innerHTML = `<p><strong>${data.groupName}</strong></p>`;
+        data.members.forEach((member, index) => {
+          const inputId = `${docSnap.id}-${index}`;
+          div.innerHTML += `
+            <div style="margin-top: 5px;">
+              ${member.name}
+              <input type="number" id="${inputId}" value="${member.score ?? 0}" min="0">
+            </div>
+          `;
+        });
+        groupsSection.appendChild(div);
+      });
+    }
+
+    async function saveScores() {
+      const snapshot = await getDocs(collection(db, 'groups'));
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        const updatedMembers = data.members.map((member, index) => {
+          const inputId = `${docSnap.id}-${index}`;
+          const scoreInput = document.getElementById(inputId);
+          return {
+            name: member.name,
+            score: parseInt(scoreInput.value) || 0
+          };
+        });
+
+        await setDoc(doc(db, 'groups', docSnap.id), {
+          groupName: data.groupName,
+          members: updatedMembers
+        });
+      }
+      alert('Scores saved successfully!');
+    }
+
+    async function distributeGroups() {
       const participantsRef = collection(db, 'participants');
       const groupsRef = collection(db, 'groups');
 
-      // Удаляем старые группы
       const existingGroups = await getDocs(groupsRef);
       existingGroups.forEach(doc => deleteDoc(doc.ref));
 
@@ -168,11 +197,11 @@
       });
 
       if (participants.length === 0) {
-        Swal.fire('No participants', 'There are no approved participants yet.', 'warning');
+        alert('No approved participants to distribute.');
         return;
       }
 
-      participants.sort(() => Math.random() - 0.5); // Перемешиваем
+      participants.sort(() => Math.random() - 0.5);
 
       const maxGroupSize = 6;
       const total = participants.length;
@@ -185,7 +214,7 @@
       const groups = Array.from({ length: numGroups }, () => []);
 
       participants.forEach((participant, index) => {
-        groups[index % numGroups].push(participant);
+        groups[index % numGroups].push({ name: participant, score: 0 });
       });
 
       for (let i = 0; i < groups.length; i++) {
@@ -195,28 +224,34 @@
         });
       }
 
-      Swal.fire('Groups Created', `Created ${groups.length} groups.`, 'success');
+      alert(`Created ${groups.length} groups.`);
     }
 
     async function resetGroups() {
       const groupsRef = collection(db, 'groups');
       const existingGroups = await getDocs(groupsRef);
       existingGroups.forEach(doc => deleteDoc(doc.ref));
-
-      Swal.fire('Groups Reset', 'All groups have been deleted.', 'success');
+      alert('All groups have been reset.');
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const distributeBtn = document.getElementById('distribute-btn');
-      const resetBtn = document.getElementById('reset-btn');
-
-      distributeBtn.addEventListener('click', createGroups);
-      resetBtn.addEventListener('click', resetGroups);
-
+    viewRegistrationsBtn.addEventListener('click', () => {
+      participantsSection.classList.remove('hidden');
+      groupsSection.classList.add('hidden');
+      saveScoresBtn.classList.add('hidden');
       loadParticipants();
     });
-  </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    viewGroupsBtn.addEventListener('click', () => {
+      participantsSection.classList.add('hidden');
+      groupsSection.classList.remove('hidden');
+      saveScoresBtn.classList.remove('hidden');
+      loadGroups();
+    });
+
+    distributeBtn.addEventListener('click', distributeGroups);
+    resetBtn.addEventListener('click', resetGroups);
+    saveScoresBtn.addEventListener('click', saveScores);
+
+  </script>
 </body>
 </html>
