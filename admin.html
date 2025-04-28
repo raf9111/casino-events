@@ -11,7 +11,7 @@
       color: #f2f2f2;
       padding: 2rem;
     }
-    h1, h2 {
+    h1 {
       color: gold;
     }
     .participant {
@@ -32,6 +32,7 @@
       border-radius: 5px;
       cursor: pointer;
       margin-top: 0.5rem;
+      margin-right: 0.5rem;
     }
     .delete-btn {
       background-color: #dc3545;
@@ -41,20 +42,18 @@
       border-radius: 5px;
       cursor: pointer;
       margin-top: 0.5rem;
-      margin-left: 0.5rem;
     }
-    .button {
-      background-color: #555;
-      color: white;
+    .group-btn {
+      background-color: #ffc107;
+      color: black;
       border: none;
-      padding: 0.7rem 1.5rem;
-      margin-right: 1rem;
-      margin-top: 1rem;
-      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
       cursor: pointer;
+      margin: 0.5rem 0.5rem 1rem 0;
     }
   </style>
-  <script>
+   <script>
   document.addEventListener('DOMContentLoaded', () => {
     const password = prompt('Enter admin password:');
     const correctPassword = "casino1"; // 🔥 здесь поставь свой пароль!
@@ -65,50 +64,39 @@
     }
   });
 </script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
   <h1>Admin Panel</h1>
-  <div id="participants-list"></div>
 
-  <div style="margin-top: 2rem;">
-    <h2>Manage Groups</h2>
-    <button class="button" id="distribute-btn">Distribute Groups</button>
-    <button class="button" id="reset-btn" style="background-color: #dc3545;">Reset Groups</button>
+  <div>
+    <button id="distribute-btn" class="group-btn">Distribute Groups</button>
+    <button id="reset-btn" class="group-btn">Reset Groups</button>
   </div>
+
+  <div id="participants-list"></div>
 
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import {
-      getFirestore, collection, getDocs, addDoc, updateDoc, doc, deleteDoc
+      getFirestore, collection, getDocs, query, orderBy,
+      addDoc, updateDoc, deleteDoc, doc
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
       authDomain: "casino-events-8008d.firebaseapp.com",
       projectId: "casino-events-8008d",
-      storageBucket: "casino-events-8008d.firebasestorage.app",
+      storageBucket: "casino-events-8008d.appspot.com",
       messagingSenderId: "13547117273",
       appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
     };
-    
-document.addEventListener('DOMContentLoaded', () => {
-  const distributeBtn = document.getElementById('distribute-btn');
-  const resetBtn = document.getElementById('reset-btn');
-
-  distributeBtn.addEventListener('click', createGroups);
-  resetBtn.addEventListener('click', resetGroups);
-
-  loadParticipants();
-});
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     const participantsList = document.getElementById("participants-list");
 
-    // Функция отправки уведомлений в Telegram
     async function sendTelegramNotification(message) {
       const token = "8129557214:AAEzFFKl7u1cVv8I8c8Rj_2lW7_MoOdgWU8";
       const chatId = "231694521";
@@ -121,10 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Загрузка участников
     async function loadParticipants() {
-      participantsList.innerHTML = "";
-      const querySnapshot = await getDocs(collection(db, "participants"));
+      const querySnapshot = await getDocs(
+        query(collection(db, "participants"), orderBy("timestamp"))
+      );
+
+      participantsList.innerHTML = '';
+
       querySnapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const div = document.createElement("div");
@@ -136,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <button class="approve-btn">Approve</button>
           <button class="delete-btn">Delete</button>
         `;
+
         const approveBtn = div.querySelector(".approve-btn");
         const deleteBtn = div.querySelector(".delete-btn");
 
@@ -146,83 +138,85 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           approveBtn.disabled = true;
           approveBtn.innerText = "Approved";
-          await sendTelegramNotification(`✅ Participant ${data.name} was approved!`);
+          await sendTelegramNotification(`Участник ${data.name} был одобрен!`);
         });
 
         deleteBtn.addEventListener("click", async () => {
           await deleteDoc(doc(db, "participants", docSnap.id));
           div.remove();
-          await sendTelegramNotification(`❌ Participant ${data.name} was deleted.`);
+          await sendTelegramNotification(`Участник ${data.name} был удален!`);
         });
 
         participantsList.appendChild(div);
       });
     }
 
-    // Рандомное распределение по группам
-   async function createGroups() {
-  const participantsRef = db.collection('participants');
-  const groupsRef = db.collection('groups');
+    async function createGroups() {
+      const participantsRef = collection(db, 'participants');
+      const groupsRef = collection(db, 'groups');
 
-  // Чистим старые группы
-  const existingGroups = await groupsRef.get();
-  existingGroups.forEach(doc => doc.ref.delete());
+      // Удаляем старые группы
+      const existingGroups = await getDocs(groupsRef);
+      existingGroups.forEach(doc => deleteDoc(doc.ref));
 
-  const snapshot = await participantsRef.where('approved', '==', true).get();
-  const participants = [];
-  snapshot.forEach(doc => participants.push(doc.data().name));
+      const snapshot = await getDocs(query(participantsRef, orderBy('timestamp')));
+      const participants = [];
+      snapshot.forEach(doc => {
+        if (doc.data().approved) {
+          participants.push(doc.data().name);
+        }
+      });
 
-  if (participants.length === 0) {
-    Swal.fire('No participants', 'There are no approved participants yet.', 'warning');
-    return;
-  }
+      if (participants.length === 0) {
+        Swal.fire('No participants', 'There are no approved participants yet.', 'warning');
+        return;
+      }
 
-  // Перемешиваем участников
-  participants.sort(() => Math.random() - 0.5);
+      participants.sort(() => Math.random() - 0.5); // Перемешиваем
 
-  // Определяем количество групп
-  const maxGroupSize = 6;
-  const minGroupSize = 4;
-  const total = participants.length;
-  let numGroups = Math.ceil(total / maxGroupSize);
+      const maxGroupSize = 6;
+      const total = participants.length;
+      let numGroups = Math.ceil(total / maxGroupSize);
 
-  while (numGroups > 1 && Math.ceil(total / numGroups) > maxGroupSize) {
-    numGroups++;
-  }
+      while (numGroups > 1 && Math.ceil(total / numGroups) > maxGroupSize) {
+        numGroups++;
+      }
 
-  const groups = Array.from({ length: numGroups }, () => []);
+      const groups = Array.from({ length: numGroups }, () => []);
 
-  participants.forEach((participant, index) => {
-    groups[index % numGroups].push(participant);
-  });
+      participants.forEach((participant, index) => {
+        groups[index % numGroups].push(participant);
+      });
 
-  // Сохраняем группы в базу данных
-  for (let i = 0; i < groups.length; i++) {
-    await groupsRef.add({
-      groupName: `Group ${String.fromCharCode(65 + i)}`,
-      members: groups[i]
-    });
-  }
+      for (let i = 0; i < groups.length; i++) {
+        await addDoc(groupsRef, {
+          groupName: `Group ${String.fromCharCode(65 + i)}`,
+          members: groups[i]
+        });
+      }
 
-  Swal.fire('Groups Created', `Created ${groups.length} groups.`, 'success');
-}
+      Swal.fire('Groups Created', `Created ${groups.length} groups.`, 'success');
+    }
 
-    // Сброс всех групп
-   async function resetGroups() {
-  const groupsRef = db.collection('groups');
-  const existingGroups = await groupsRef.get();
-  existingGroups.forEach(doc => doc.ref.delete());
+    async function resetGroups() {
+      const groupsRef = collection(db, 'groups');
+      const existingGroups = await getDocs(groupsRef);
+      existingGroups.forEach(doc => deleteDoc(doc.ref));
 
-  Swal.fire('Groups Reset', 'All groups have been deleted.', 'success');
-}
+      Swal.fire('Groups Reset', 'All groups have been deleted.', 'success');
+    }
 
-    // При загрузке страницы
-    window.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const distributeBtn = document.getElementById('distribute-btn');
+      const resetBtn = document.getElementById('reset-btn');
+
+      distributeBtn.addEventListener('click', createGroups);
+      resetBtn.addEventListener('click', resetGroups);
+
       loadParticipants();
-
-      document.getElementById('distribute-btn').addEventListener('click', distributeGroups);
-      document.getElementById('reset-btn').addEventListener('click', resetGroups);
     });
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
