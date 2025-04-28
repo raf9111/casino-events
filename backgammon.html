@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Backgammon Tournament</title>
 
-  <!-- Firebase и SweetAlert (на будущее) -->
+  <!-- Firebase и SweetAlert -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -32,7 +32,6 @@
       background-color: rgba(0, 0, 0, 0.75);
       z-index: -1;
     }
-
     .hero-image {
       background-image: url('https://i.imgur.com/v2ewA5v.jpeg');
       height: 300px;
@@ -65,7 +64,6 @@
     .hero-text p {
       font-size: 1.2rem;
     }
-
     .container {
       max-width: 900px;
       margin: 2rem auto;
@@ -104,31 +102,29 @@
       background-color: rgba(33, 59, 45, 0.9);
       border-radius: 8px;
     }
-    .group {
+    .group-block {
       margin-bottom: 2rem;
     }
     .group-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 0.5rem;
-      background-color: rgba(33, 59, 45, 0.9);
-      border-radius: 8px;
-      overflow: hidden;
+      margin-top: 1rem;
     }
     .group-table th, .group-table td {
       border: 1px solid #3c6650;
-      padding: 0.75rem;
-      text-align: center;
-      color: #f2eecb;
+      padding: 8px;
+      text-align: left;
     }
-    .group-table input[type="number"] {
+    .group-table th {
+      background-color: #213b2d;
+    }
+    .score-input {
       width: 60px;
-      padding: 0.3rem;
+      padding: 4px;
       border-radius: 4px;
-      border: none;
-      text-align: center;
-      background-color: #fff7cc;
-      color: #000;
+      border: 1px solid #888;
+      background-color: #1e1e1e;
+      color: #f2eecb;
     }
     a.back-link {
       display: inline-block;
@@ -179,41 +175,7 @@
   </div>
 
   <div id="groups" class="content">
-    <h3>Group Stage</h3>
-
-    <div class="group">
-      <h4>Group A</h4>
-      <table class="group-table">
-        <tr><th>Player</th><th>Score</th></tr>
-        <tr><td>Player 1</td><td><input type="number" min="0" /></td></tr>
-        <tr><td>Player 2</td><td><input type="number" min="0" /></td></tr>
-        <tr><td>Player 3</td><td><input type="number" min="0" /></td></tr>
-        <tr><td>Player 4</td><td><input type="number" min="0" /></td></tr>
-      </table>
-    </div>
-
-    <div class="group">
-      <h4>Group B</h4>
-      <table class="group-table">
-        <tr><th>Player</th><th>Score</th></tr>
-        <tr><td>Player 5</td><td><input type="number" min="0" /></td></tr>
-        <tr><td>Player 6</td><td><input type="number" min="0" /></td></tr>
-        <tr><td>Player 7</td><td><input type="number" min="0" /></td></tr>
-        <tr><td>Player 8</td><td><input type="number" min="0" /></td></tr>
-      </table>
-    </div>
-
-    <div class="group">
-      <h4>Group C</h4>
-      <table class="group-table">
-        <tr><th>Player</th><th>Score</th></tr>
-        <tr><td>Player 9</td><td><input type="number" min="0" /></td></tr>
-        <tr><td>Player 10</td><td><input type="number" min="0" /></td></tr>
-        <tr><td>Player 11</td><td><input type="number" min="0" /></td></tr>
-        <tr><td>Player 12</td><td><input type="number" min="0" /></td></tr>
-      </table>
-    </div>
-
+    <div id="groups-content">Loading groups...</div>
   </div>
 
   <div id="playoffs" class="content">
@@ -228,8 +190,7 @@
     <ul>
       <li>Standard backgammon rules apply.</li>
       <li>Group games play till 11pts</li>
-      <li>Time limit - unknown yet</li>
-      <li>Top 3? from each group advance to playoffs.</li>
+      <li>Top players from each group advance to playoffs.</li>
     </ul>
   </div>
 
@@ -239,18 +200,74 @@
 
 </div>
 
-<script>
-function toggleContent(id) {
-  const allContents = document.querySelectorAll('.content');
-  allContents.forEach(content => {
-    if (content.id === id) {
-      content.style.display = (content.style.display === "block") ? "none" : "block";
-    } else {
-      content.style.display = "none";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import {
+    getFirestore, collection, getDocs
+  } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
+    authDomain: "casino-events-8008d.firebaseapp.com",
+    projectId: "casino-events-8008d",
+    storageBucket: "casino-events-8008d.appspot.com",
+    messagingSenderId: "13547117273",
+    appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const groupsContainer = document.getElementById('groups-content');
+
+  async function loadGroups() {
+    const snapshot = await getDocs(collection(db, 'groups'));
+
+    groupsContainer.innerHTML = '';
+
+    snapshot.forEach((doc) => {
+      const groupData = doc.data();
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'group-block';
+      groupDiv.innerHTML = `
+        <h3>${groupData.groupName}</h3>
+        <table class="group-table">
+          <thead>
+            <tr><th>Player</th><th>Score</th></tr>
+          </thead>
+          <tbody>
+            ${groupData.members.map(player => `
+              <tr>
+                <td>${player}</td>
+                <td><input type="number" class="score-input" placeholder="0" min="0"></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      groupsContainer.appendChild(groupDiv);
+    });
+  }
+
+  function toggleContent(id) {
+    const allContents = document.querySelectorAll('.content');
+    allContents.forEach(content => {
+      if (content.id === id) {
+        content.style.display = (content.style.display === "block") ? "none" : "block";
+      } else {
+        content.style.display = "none";
+      }
+    });
+
+    if (id === 'groups') {
+      loadGroups();
     }
-  });
-}
+  }
+
+  window.toggleContent = toggleContent;
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </body>
 </html>
