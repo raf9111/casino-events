@@ -77,6 +77,21 @@
   </div>
 
   <div id="matches" class="matches"></div>
+  
+  <div class="container">
+  <h2>1/8 Finals</h2>
+  <div id="round-1-8"></div>
+
+  <h2>Quarterfinals</h2>
+  <div id="round-1-4"></div>
+
+  <h2>Semifinals</h2>
+  <div id="round-1-2"></div>
+
+  <h2>Final</h2>
+  <div id="final"></div>
+</div>
+
 
   <script>
     const firebaseConfig = {
@@ -121,6 +136,54 @@
       }
     }
   </script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
+  authDomain: "casino-events-8008d.firebaseapp.com",
+  projectId: "casino-events-8008d",
+  storageBucket: "casino-events-8008d.appspot.com",
+  messagingSenderId: "13547117273",
+  appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+async function loadPlayoffRound(roundId, containerId) {
+  const roundDoc = await db.collection('playoff_rounds').doc(roundId).get();
+  if (!roundDoc.exists) return;
+
+  const data = roundDoc.data();
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+
+  data.pairs.forEach((pair, index) => {
+    const div = document.createElement('div');
+    div.style.marginBottom = '1rem';
+    div.style.padding = '0.5rem';
+    div.style.backgroundColor = '#213b2d';
+    div.style.borderRadius = '8px';
+    div.innerHTML = `
+      <strong>Match ${index + 1}</strong><br>
+      <span style="color: ${pair.winner === pair.player1 ? 'gold' : 'white'};">${pair.player1 || '-'} (${pair.score1 || '0'})</span> 
+      vs 
+      <span style="color: ${pair.winner === pair.player2 ? 'gold' : 'white'};">${pair.player2 || '-'} (${pair.score2 || '0'})</span>
+    `;
+    container.appendChild(div);
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadPlayoffRound('round_1_8', 'round-1-8');
+  loadPlayoffRound('round_1_4', 'round-1-4');
+  loadPlayoffRound('round_1_2', 'round-1-2');
+  loadPlayoffRound('final', 'final');
+});
+</script>
+
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
