@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playoff</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0a0a0a;
+      color: #f2eecb;
+      text-align: center;
+    }
+
+    header {
+      padding: 1rem;
+      font-size: 2rem;
+      color: gold;
+    }
+
+    .round-buttons {
+      margin: 1rem;
+    }
+
+    .round-buttons button {
+      background-color: #bfa046;
+      color: #0a0a0a;
+      border: none;
+      padding: 0.5rem 1rem;
+      margin: 0.5rem;
+      cursor: pointer;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    .matches {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .match {
+      background-color: #213b2d;
+      padding: 1rem;
+      margin: 0.5rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .winner {
+      background-color: #28a745 !important;
+    }
+
+    @media (max-width: 600px) {
+      .match {
+        width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>Playoff Bracket</header>
+
+  <div class="round-buttons">
+    <button onclick="showRound('round_1_8')">1/8</button>
+    <button onclick="showRound('round_1_4')">1/4</button>
+    <button onclick="showRound('round_1_2')">1/2</button>
+    <button onclick="showRound('final')">Final</button>
+  </div>
+
+  <div id="matches" class="matches"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
+      authDomain: "casino-events-8008d.firebaseapp.com",
+      projectId: "casino-events-8008d",
+      storageBucket: "casino-events-8008d.appspot.com",
+      messagingSenderId: "13547117273",
+      appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function showRound(roundId) {
+      const matchesDiv = document.getElementById('matches');
+      matchesDiv.innerHTML = '';
+      matchesDiv.style.display = 'flex';
+
+      const doc = await db.collection('playoff_rounds').doc(roundId).get();
+
+      if (doc.exists) {
+        const matches = doc.data().matches;
+
+        matches.forEach(match => {
+          const div = document.createElement('div');
+          div.className = 'match';
+
+          if (match.winner === 'player1') div.classList.add('winner');
+          if (match.winner === 'player2') div.classList.add('winner');
+
+          div.innerHTML = `
+            <span>${match.player1} (${match.score1})</span>
+            <span>vs</span>
+            <span>${match.player2} (${match.score2})</span>
+          `;
+
+          matchesDiv.appendChild(div);
+        });
+      } else {
+        matchesDiv.innerHTML = '<p>No matches for this round yet.</p>';
+      }
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+</html>
