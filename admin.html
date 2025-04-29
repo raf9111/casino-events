@@ -65,6 +65,21 @@
 
   <div id="participants-section" class="hidden"></div>
   <div id="groups-section" class="hidden"></div>
+  <!-- Playoff управление -->
+<div style="margin-top: 2rem;">
+  <h2>🏆 Playoff Manager</h2>
+
+  <select id="round-selector">
+    <option value="round_1_8">1/8 Finals</option>
+    <option value="round_1_4">Quarterfinals</option>
+    <option value="round_1_2">Semifinals</option>
+    <option value="final">Final</option>
+  </select>
+
+  <button id="save-playoff-btn" style="margin-left: 1rem;">Save Round</button>
+
+  <div id="playoff-pairs" style="margin-top: 1rem;"></div>
+</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -253,5 +268,95 @@
     saveScoresBtn.addEventListener('click', saveScores);
 
   </script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import {
+    getFirestore, doc, setDoc, getDoc
+  } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCff3GS7xVuVJRk6NkxIyyYEi6lStiD2NM",
+    authDomain: "casino-events-8008d.firebaseapp.com",
+    projectId: "casino-events-8008d",
+    storageBucket: "casino-events-8008d.appspot.com",
+    messagingSenderId: "13547117273",
+    appId: "1:13547117273:web:cd1b6dcfb992660c5b3cc8"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const playoffPairs = document.getElementById("playoff-pairs");
+  const roundSelector = document.getElementById("round-selector");
+  const saveBtn = document.getElementById("save-playoff-btn");
+
+  async function loadPlayoff(roundId) {
+    playoffPairs.innerHTML = "";
+
+    const roundRef = doc(db, "playoff_rounds", roundId);
+    const roundSnap = await getDoc(roundRef);
+
+    let pairs = [];
+    if (roundSnap.exists()) {
+      pairs = roundSnap.data().pairs || [];
+    } else {
+      // Пустая заготовка если раунд пустой
+      pairs = Array(8).fill({ player1: "", player2: "", score1: "", score2: "", winner: "" });
+    }
+
+    pairs.forEach((pair, index) => {
+      const div = document.createElement("div");
+      div.className = "playoff-pair";
+      div.innerHTML = `
+        <p><strong>Match ${index + 1}</strong></p>
+        <input type="text" placeholder="Player 1" value="${pair.player1 || ""}" />
+        <input type="number" placeholder="Score 1" value="${pair.score1 || ""}" />
+        <br><br>
+        <input type="text" placeholder="Player 2" value="${pair.player2 || ""}" />
+        <input type="number" placeholder="Score 2" value="${pair.score2 || ""}" />
+        <br><br>
+        <label>Winner:
+          <select>
+            <option value="">–</option>
+            <option value="${pair.player1}">${pair.player1}</option>
+            <option value="${pair.player2}">${pair.player2}</option>
+          </select>
+        </label>
+        <hr>
+      `;
+      playoffPairs.appendChild(div);
+    });
+  }
+
+  async function savePlayoff(roundId) {
+    const pairs = [];
+    const allPairs = document.querySelectorAll(".playoff-pair");
+
+    allPairs.forEach(div => {
+      const inputs = div.querySelectorAll("input");
+      const select = div.querySelector("select");
+      pairs.push({
+        player1: inputs[0].value,
+        score1: inputs[1].value,
+        player2: inputs[2].value,
+        score2: inputs[3].value,
+        winner: select.value
+      });
+    });
+
+    await setDoc(doc(db, "playoff_rounds", roundId), { pairs });
+    alert("Playoff round saved!");
+  }
+
+  roundSelector.addEventListener("change", () => {
+    loadPlayoff(roundSelector.value);
+  });
+
+  saveBtn.addEventListener("click", () => {
+    savePlayoff(roundSelector.value);
+  });
+
+  loadPlayoff(roundSelector.value);
+</script>
 </body>
 </html>
